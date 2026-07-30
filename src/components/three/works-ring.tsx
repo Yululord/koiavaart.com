@@ -8,6 +8,7 @@ import { buildRingSlots } from "@/data/works";
 import { ringScrollProgress } from "@/lib/scroll-progress";
 import {
   ringConfig,
+  ringSlotCount,
   signedJitter,
   subscribeRingConfig,
 } from "@/config/ring";
@@ -102,20 +103,29 @@ function WorkPlane({
     const vh = size.height;
 
     const radius = vw * cfg.radiusFactor;
-    const circumference = 2 * Math.PI * radius;
+
+    // Ring spacing is pinned to whatever divides the circumference exactly,
+    // so the cylinder always closes; the line is free to use its own. The
+    // band's wrap period follows the spacing currently in effect.
+    const spacing = THREE.MathUtils.lerp(
+      (2 * Math.PI * radius) / total,
+      vw * cfg.lineSpacing,
+      e,
+    );
+    const period = spacing * total;
 
     // Arc-length position of this card along the band. Idle drift, scroll
     // and pointer parallax are all shifts along the arc, so cards always
     // travel in the direction of rotation.
-    const idle = (performance.now() / 1000) * cfg.idleSpeed * circumference;
+    const idle = (performance.now() / 1000) * cfg.idleSpeed * period;
     const scrolled =
       (Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd)) *
-      circumference *
+      period *
       cfg.stripTravel;
-    const nudge = pointer.x * circumference * cfg.pointerPush;
+    const nudge = pointer.x * period * cfg.pointerPush;
     const s = wrapSigned(
-      (index / total - 0.5) * circumference + idle + scrolled + nudge,
-      circumference,
+      (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
+      period,
     );
 
     // Unroll: the band keeps its arc length while its radius grows toward
@@ -136,11 +146,15 @@ function WorkPlane({
     // Jitter is ironed out as the band flattens, so the resolved line is
     // even — dial `jitterFlatten` down to carry the scatter into the strip.
     const jitter = 1 - e * cfg.jitterFlatten;
-    const slotArc = circumference / total;
-    const fill = THREE.MathUtils.lerp(cfg.cardFillRing, cfg.cardFillLine, e);
     const sizeVary = 1 + signedJitter(index, 1) * cfg.sizeJitter * jitter;
 
-    const cardW = slotArc * fill * sizeVary * hoverScale;
+    // Card width is set outright rather than as a share of the gap, so size
+    // and spacing can be dialled independently.
+    const cardW =
+      vw *
+      THREE.MathUtils.lerp(cfg.cardWidthRing, cfg.cardWidthLine, e) *
+      sizeVary *
+      hoverScale;
     const cardH = cardW / aspect;
     const y =
       vh * cfg.verticalOffset +
@@ -190,8 +204,8 @@ function WorkPlane({
 
 function Ring() {
   const groupRef = useRef<THREE.Group>(null!);
-  const repeats = useConfigValue(() => ringConfig.repeats);
-  const slots = useMemo(() => buildRingSlots(repeats), [repeats]);
+  const slotCount = useConfigValue(ringSlotCount);
+  const slots = useMemo(() => buildRingSlots(slotCount), [slotCount]);
 
   useFrame((_, delta) => {
     const group = groupRef.current;

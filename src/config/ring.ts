@@ -7,17 +7,31 @@
  * defaults below so they stick.
  */
 export type RingConfig = {
-  // ---- Layout -----------------------------------------------------------
+  // ---- Cylinder ---------------------------------------------------------
   /** Cylinder radius as a fraction of viewport width. Bigger = flatter arc. */
   radiusFactor: number;
-  /** Card width ÷ slot arc while coiled. 1.0 = cards touch edge to edge. */
-  cardFillRing: number;
-  /** Card width ÷ slot arc once unrolled into the line. */
-  cardFillLine: number;
+  /**
+   * Distance between card centres around the cylinder, as a fraction of
+   * viewport width. This sets how many cards it takes to close the circle,
+   * so it steps in whole cards — the panel reports the count and the exact
+   * spacing it settles on. Works repeat to fill whatever it needs.
+   */
+  ringSpacing: number;
+  /** Card width on the cylinder, as a fraction of viewport width. */
+  cardWidthRing: number;
+
+  // ---- Line -------------------------------------------------------------
+  /**
+   * Distance between card centres once unrolled, as a fraction of viewport
+   * width. Free of the closure constraint, so this one is continuous.
+   */
+  lineSpacing: number;
+  /** Card width in the unrolled line, as a fraction of viewport width. */
+  cardWidthLine: number;
+
+  // ---- Placement --------------------------------------------------------
   /** Cylinder centre, as a fraction of viewport height. Negative = lower. */
   verticalOffset: number;
-  /** How many times the set of works is walked around the ring. */
-  repeats: number;
 
   // ---- Shape ------------------------------------------------------------
   /** Tilt of the whole cylinder about its horizontal axis, radians. */
@@ -56,10 +70,13 @@ export type RingConfig = {
 
 export const ringConfig: RingConfig = {
   radiusFactor: 0.42,
-  cardFillRing: 0.58,
-  cardFillLine: 0.78,
+  ringSpacing: 0.293,
+  cardWidthRing: 0.17,
+
+  lineSpacing: 0.293,
+  cardWidthLine: 0.229,
+
   verticalOffset: -0.04,
-  repeats: 1,
 
   tiltX: -0.09,
   tiltZ: 0,
@@ -82,10 +99,13 @@ export const ringConfig: RingConfig = {
 /** Ranges for the dev panel: [min, max, step]. */
 export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]> = {
   radiusFactor: [0.15, 1.2, 0.01],
-  cardFillRing: [0.1, 1.5, 0.01],
-  cardFillLine: [0.1, 2, 0.01],
+  ringSpacing: [0.06, 0.9, 0.002],
+  cardWidthRing: [0.03, 0.6, 0.002],
+
+  lineSpacing: [0.06, 1.2, 0.002],
+  cardWidthLine: [0.03, 0.8, 0.002],
+
   verticalOffset: [-0.4, 0.4, 0.005],
-  repeats: [1, 4, 1],
 
   tiltX: [-0.6, 0.6, 0.005],
   tiltZ: [-0.6, 0.6, 0.005],
@@ -104,6 +124,25 @@ export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]
   fov: [20, 80, 1],
   hoverScale: [1, 1.6, 0.01],
 };
+
+/**
+ * How many cards it takes to close the cylinder at the current radius and
+ * spacing. A ring only looks seamless if its cards divide the circumference
+ * exactly, so the count is a whole number and the spacing slider therefore
+ * steps rather than glides. `ringSpacingActual` reports where it landed.
+ *
+ * Both inputs are fractions of viewport width, so width cancels and the
+ * count is resolution-independent.
+ */
+export function ringSlotCount() {
+  const ideal = (2 * Math.PI * ringConfig.radiusFactor) / ringConfig.ringSpacing;
+  return Math.max(3, Math.round(ideal));
+}
+
+/** The spacing the ring actually settles on, once quantised to whole cards. */
+export function ringSpacingActual() {
+  return (2 * Math.PI * ringConfig.radiusFactor) / ringSlotCount();
+}
 
 const listeners = new Set<() => void>();
 

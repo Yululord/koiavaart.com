@@ -4,6 +4,8 @@ import { useState, useSyncExternalStore } from "react";
 import {
   ringConfig,
   ringConfigRanges,
+  ringSlotCount,
+  ringSpacingActual,
   setRingConfig,
   type RingConfig,
 } from "@/config/ring";
@@ -12,14 +14,16 @@ type Group = { label: string; keys: (keyof RingConfig)[] };
 
 const GROUPS: Group[] = [
   {
-    label: "Layout",
-    keys: [
-      "radiusFactor",
-      "cardFillRing",
-      "cardFillLine",
-      "verticalOffset",
-      "repeats",
-    ],
+    label: "Cylinder",
+    keys: ["radiusFactor", "ringSpacing", "cardWidthRing"],
+  },
+  {
+    label: "Line",
+    keys: ["lineSpacing", "cardWidthLine"],
+  },
+  {
+    label: "Placement",
+    keys: ["verticalOffset"],
   },
   {
     label: "Shape",
@@ -48,10 +52,11 @@ const GROUPS: Group[] = [
 
 const LABELS: Partial<Record<keyof RingConfig, string>> = {
   radiusFactor: "Radius",
-  cardFillRing: "Card size — ring",
-  cardFillLine: "Card size — line",
+  ringSpacing: "Gap between cards",
+  cardWidthRing: "Card width",
+  lineSpacing: "Gap between cards",
+  cardWidthLine: "Card width",
   verticalOffset: "Vertical position",
-  repeats: "Repeats around ring",
   tiltX: "Tilt (up/down)",
   tiltZ: "Tilt (roll)",
   cardRoll: "Card roll (random)",
@@ -116,6 +121,13 @@ export function RingControls() {
         >
           {copied ? "Copied" : "Copy config"}
         </button>
+      </div>
+
+      <div className="mb-3 flex justify-between rounded bg-white/10 px-2 py-1">
+        <span className="text-white/60">Cards to close ring</span>
+        <span>
+          {ringSlotCount()} @ {ringSpacingActual().toFixed(3)}
+        </span>
       </div>
 
       {GROUPS.map((group) => (

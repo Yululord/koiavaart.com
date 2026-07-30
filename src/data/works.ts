@@ -24,13 +24,13 @@ export const works: Work[] = [
 ];
 
 /**
- * Lays the works out around the cylinder. One repeat means every painting
- * appears exactly once, whether coiled or unrolled — raise it (via the
- * `repeats` control) to pack the ring more densely, at the cost of seeing
- * a painting more than once as the strip scrolls.
+ * Fills `count` slots around the cylinder, cycling the works as needed. The
+ * count comes from the radius and spacing controls; when it exceeds the
+ * number of works a painting will recur, which is the trade-off for packing
+ * the ring more tightly.
  */
-export function buildRingSlots(repeats: number) {
-  return Array.from({ length: works.length * Math.max(1, repeats) }, (_, i) => ({
+export function buildRingSlots(count: number) {
+  return Array.from({ length: Math.max(1, count) }, (_, i) => ({
     ...works[i % works.length],
     slot: i,
   }));

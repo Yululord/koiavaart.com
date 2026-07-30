@@ -112,10 +112,21 @@ https://experiment.obys.agency/ (Obys "Experiment Space")
   Vercel.
 
 ## Tuning the hero cylinder
-Every parameter lives in `src/config/ring.ts` — radius, card sizes, vertical
-position, repeats, tilt, per-card roll, height/size scatter, depth fade, idle
-speed, scroll travel, pointer parallax, unwrap timing, field of view, hover
-zoom.
+Every parameter lives in `src/config/ring.ts`. Card spacing and card width are
+separate controls, and the coiled cylinder and the unrolled line each get
+their own pair — so the ring can be tight and small while the line is wide and
+large, or vice versa.
+
+One asymmetry worth knowing: a cylinder only looks seamless if its cards
+divide the circumference exactly, so the ring's card count is a whole number
+and its gap slider steps rather than glides. The panel reports the count and
+the exact gap it settles on ("9 @ 0.293"). The line has no such constraint, so
+its gap is continuous. Raising the ring's card count past the number of works
+makes a painting recur — that is the cost of a denser ring.
+
+Also on tap: radius, vertical position, tilt on two axes, per-card roll,
+height/size scatter, depth fade, idle speed, scroll travel, pointer parallax,
+unwrap timing, field of view and hover zoom.
 
 Append **`?tune`** to any URL to open a live panel of sliders (works locally
 and on a deployed preview; it is hidden without the flag). Adjust until it
