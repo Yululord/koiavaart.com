@@ -1,44 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { ringSlots } from "@/data/works";
+import { buildRingSlots } from "@/data/works";
 import { ringScrollProgress } from "@/lib/scroll-progress";
+import {
+  ringConfig,
+  signedJitter,
+  subscribeRingConfig,
+} from "@/config/ring";
 
 const textureLoader = new THREE.TextureLoader();
-
-const FOV = 45;
-/** Ring is tipped back so its far side rides higher on screen. */
-const TILT = -0.09;
-/** Progress at which the circle has fully opened into the line. */
-const UNWIND_END = 0.42;
-/** Progress at which the strip starts fading out before the About section. */
-const FADE_START = 0.9;
-/** Ring radius as a fraction of viewport width. */
-const RADIUS_FACTOR = 0.5;
-/**
- * The band travels right-to-left, so both the idle drift and the
- * scroll-driven travel are negative shifts along the arc.
- */
-const STRIP_TRAVEL = -1.2;
-const IDLE_LOOPS_PER_SEC = -1 / 90;
-/**
- * How far the pointer nudges the carousel, as a fraction of one loop.
- * Kept well under one slot (1/18 of a loop) so parallax never drags a card
- * out from under the cursor mid-hover.
- */
-const POINTER_PUSH = 0.014;
-const HOVER_SCALE = 1.14;
-/**
- * Share of each slot's arc taken up by the artwork. The coiled ring is
- * dense and small-carded like the Figma hero. Unrolled, half the slots have
- * dropped away, so the survivors are measured against a double-width slot
- * to open the paintings up.
- */
-const CARD_FILL_RING = 0.62;
-const CARD_FILL_LINE = 0.72;
 
 /** Smoothed pointer, in normalised [-1, 1] screen coordinates. */
 const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 };
@@ -52,22 +26,27 @@ function wrapSigned(value: number, span: number) {
 /** 0 while coiled, 1 once the circle has opened into a straight line. */
 function unwindAmount(p: number) {
   return THREE.MathUtils.smoothstep(
-    THREE.MathUtils.clamp(p / UNWIND_END, 0, 1),
+    THREE.MathUtils.clamp(p / ringConfig.unwindEnd, 0, 1),
     0,
     1,
   );
 }
 
+/** Subscribes to a single config field that needs to drive React, not just the loop. */
+function useConfigValue<T extends number>(read: () => T) {
+  return useSyncExternalStore(subscribeRingConfig, read, read);
+}
+
 /** Frames the camera so one world unit equals one CSS pixel at z = 0. */
 function CameraRig() {
   const { size } = useThree();
-  const distance =
-    size.height / 2 / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+  const fov = useConfigValue(() => ringConfig.fov);
+  const distance = size.height / 2 / Math.tan(THREE.MathUtils.degToRad(fov / 2));
 
   return (
     <PerspectiveCamera
       makeDefault
-      fov={FOV}
+      fov={fov}
       near={1}
       far={distance * 16}
       position={[0, 0, distance]}
@@ -107,7 +86,6 @@ function WorkPlane({
 
   useEffect(() => {
     return () => {
-      // Never leave the cursor stuck if the plane unmounts while hovered.
       if (hovered.current) document.body.style.cursor = "";
     };
   }, []);
@@ -117,32 +95,31 @@ function WorkPlane({
     const material = materialRef.current;
     if (!mesh || !material) return;
 
+    const cfg = ringConfig;
     const p = ringScrollProgress();
     const e = unwindAmount(p);
     const vw = size.width;
+    const vh = size.height;
 
-    const radius = vw * RADIUS_FACTOR;
+    const radius = vw * cfg.radiusFactor;
     const circumference = 2 * Math.PI * radius;
 
-    // Arc-length position of this card along the band. Everything that
-    // moves the carousel — idle drift, scroll, pointer — is expressed as a
-    // shift along the arc, so the cards always travel in the direction of
-    // rotation rather than being squeezed inward.
-    const idle =
-      (performance.now() / 1000) * IDLE_LOOPS_PER_SEC * circumference;
+    // Arc-length position of this card along the band. Idle drift, scroll
+    // and pointer parallax are all shifts along the arc, so cards always
+    // travel in the direction of rotation.
+    const idle = (performance.now() / 1000) * cfg.idleSpeed * circumference;
     const scrolled =
-      (Math.max(0, p - UNWIND_END) / (1 - UNWIND_END)) *
+      (Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd)) *
       circumference *
-      STRIP_TRAVEL;
-    const nudge = pointer.x * circumference * POINTER_PUSH;
+      cfg.stripTravel;
+    const nudge = pointer.x * circumference * cfg.pointerPush;
     const s = wrapSigned(
       (index / total - 0.5) * circumference + idle + scrolled + nudge,
       circumference,
     );
 
     // Unroll: the band keeps its arc length while its radius grows toward
-    // infinity, so the circle opens out into a straight line instead of
-    // collapsing into a spiral. k = 1 is the closed ring, k → 0 is flat.
+    // infinity, so the circle opens out into a line rather than collapsing.
     const k = Math.max(1 - e, 1e-4);
     const r = radius / k;
     const phi = s / r;
@@ -154,36 +131,34 @@ function WorkPlane({
       hovered.current ? 1 : 0,
       1 - Math.pow(0.002, delta),
     );
-    const hoverScale = 1 + (HOVER_SCALE - 1) * hoverEase.current;
+    const hoverScale = 1 + (cfg.hoverScale - 1) * hoverEase.current;
 
-    // Odd slots exist only to pack the coiled ring; they retire during the
-    // unroll so the strip shows each painting exactly once. The survivors
-    // are then sized against a slot twice as wide.
+    // Jitter is ironed out as the band flattens, so the resolved line is
+    // even — dial `jitterFlatten` down to carry the scatter into the strip.
+    const jitter = 1 - e * cfg.jitterFlatten;
     const slotArc = circumference / total;
-    const cardW =
-      THREE.MathUtils.lerp(
-        CARD_FILL_RING * slotArc,
-        CARD_FILL_LINE * slotArc * 2,
-        e,
-      ) * hoverScale;
-    const cardH = cardW / aspect;
+    const fill = THREE.MathUtils.lerp(cfg.cardFillRing, cfg.cardFillLine, e);
+    const sizeVary = 1 + signedJitter(index, 1) * cfg.sizeJitter * jitter;
 
-    mesh.position.set(x, 0, z);
+    const cardW = slotArc * fill * sizeVary * hoverScale;
+    const cardH = cardW / aspect;
+    const y =
+      vh * cfg.verticalOffset +
+      signedJitter(index, 2) * cfg.heightJitter * vh * jitter;
+
+    mesh.position.set(x, y, z);
     mesh.scale.set(cardW, cardH, 1);
-    mesh.rotation.y = phi;
+    mesh.rotation.set(0, phi, signedJitter(index, 3) * cfg.cardRoll * jitter);
     // Nearer cards draw last so they sit on top of the hazy far side.
     mesh.renderOrder = Math.round(z);
 
     // Near edge of the ring sits at z = 0, far side at z = -2r.
     const depth = THREE.MathUtils.clamp((z + 2 * radius) / (2 * radius), 0, 1);
-    let opacity = THREE.MathUtils.lerp(0.25, 1, depth);
-    if (index % 2 === 1) opacity *= 1 - e;
-    if (p > FADE_START) {
-      opacity *= 1 - THREE.MathUtils.smoothstep(p, FADE_START, 1);
+    let opacity = THREE.MathUtils.lerp(cfg.depthFade, 1, depth);
+    if (p > cfg.fadeStart) {
+      opacity *= 1 - THREE.MathUtils.smoothstep(p, cfg.fadeStart, 1);
     }
     material.opacity = opacity;
-
-    // Skips both drawing and raycasting, so retired cards cannot be hovered.
     mesh.visible = opacity > 0.01;
   });
 
@@ -215,6 +190,8 @@ function WorkPlane({
 
 function Ring() {
   const groupRef = useRef<THREE.Group>(null!);
+  const repeats = useConfigValue(() => ringConfig.repeats);
+  const slots = useMemo(() => buildRingSlots(repeats), [repeats]);
 
   useFrame((_, delta) => {
     const group = groupRef.current;
@@ -225,18 +202,21 @@ function Ring() {
     pointer.y = THREE.MathUtils.lerp(pointer.y, pointer.targetY, smoothing);
 
     const e = unwindAmount(ringScrollProgress());
-    group.rotation.x = (TILT + pointer.y * 0.07) * (1 - e);
+
+    // Tilt unwinds to zero so the resolved strip faces the camera square on.
+    group.rotation.x = (ringConfig.tiltX + pointer.y * 0.07) * (1 - e);
+    group.rotation.z = ringConfig.tiltZ * (1 - e);
   });
 
   return (
     <group ref={groupRef}>
-      {ringSlots.map((work, index) => (
+      {slots.map((work, index) => (
         <WorkPlane
           key={`${work.id}-${work.slot}`}
           src={work.src}
           aspect={work.width / work.height}
           index={index}
-          total={ringSlots.length}
+          total={slots.length}
         />
       ))}
     </group>

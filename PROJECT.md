@@ -111,6 +111,20 @@ https://experiment.obys.agency/ (Obys "Experiment Space")
 - **Repo/deploy:** git initialized in this folder; project set up to deploy to
   Vercel.
 
+## Tuning the hero cylinder
+Every parameter lives in `src/config/ring.ts` — radius, card sizes, vertical
+position, repeats, tilt, per-card roll, height/size scatter, depth fade, idle
+speed, scroll travel, pointer parallax, unwrap timing, field of view, hover
+zoom.
+
+Append **`?tune`** to any URL to open a live panel of sliders (works locally
+and on a deployed preview; it is hidden without the flag). Adjust until it
+looks right, hit **Copy config**, and paste over the defaults in
+`src/config/ring.ts` to make it permanent.
+
+`?p=<0–1>` pins the scroll sequence at a given point, which pairs well with
+`?tune` for dialling in a specific moment — e.g. `?tune&p=0.2` for mid-unwrap.
+
 ## Implementation notes
 - **Ring** (`src/components/three/works-ring.tsx`): planes sit on a full 360°
   circle around the group's own origin, each rotated to face outward, so the
