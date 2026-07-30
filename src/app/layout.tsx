@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { Archivo, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-// Stand-ins for the Figma type system (Gilroy / General Sans, both
-// commercially licensed) until the client confirms licensed font files.
-const archivo = Archivo({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600"],
-});
-
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+// General Sans (Fontshare, free licence) — the single family used across
+// the design. Self-hosted so there is no runtime dependency on the CDN.
+const generalSans = localFont({
+  variable: "--font-sans",
+  display: "swap",
+  src: [
+    { path: "../fonts/GeneralSans-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/GeneralSans-Medium.woff2", weight: "500", style: "normal" },
+  ],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${inter.variable}`}>
+    <html lang="en" className={generalSans.variable}>
       <body>{children}</body>
     </html>
   );

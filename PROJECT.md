@@ -40,6 +40,12 @@ continuous scroll sequence):
    `telegram-cloud-photo…`) laid out further right on the canvas — looks like the
    full works/portfolio gallery feeding the floating-image mechanic.
 
+**Type:** General Sans (Fontshare, free licence) throughout — the file
+originally specified Gilroy, which is paid, and was switched. Self-hosted
+woff2 in `src/fonts/`, wired up with `next/font/local`. Headlines are the
+Medium weight, uppercase, tracked -0.04em (the Figma hero is 180px with
+-7.2px). Body copy is Regular at natural tracking.
+
 No Figma variables/design tokens defined — colors/type styles are raw values baked
 into layers; pull exact values per-component via Figma dev-mode when building each
 section rather than relying on a shared token set.

@@ -14,8 +14,7 @@
   --color-line: var(--color-line);
   --color-panel: var(--color-panel);
   --color-panel-muted: var(--color-panel-muted);
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
+  --font-sans: var(--font-sans);
 }
 
 html {
@@ -25,9 +24,21 @@ html {
 body {
   background: #ffffff;
   color: var(--color-ink);
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/*
+ * One family throughout — General Sans. Headlines are the Medium weight,
+ * set uppercase and tightly tracked (-0.04em, matching the 180px/-7.2px
+ * in the Figma file); body copy is Regular at its natural tracking.
+ */
 .font-display {
-  font-family: var(--font-display), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.font-body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 400;
 }

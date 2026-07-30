@@ -17,7 +17,7 @@ const UNWIND_END = 0.42;
 /** Progress at which the strip starts fading out before the About section. */
 const FADE_START = 0.9;
 /** Ring radius as a fraction of viewport width. */
-const RADIUS_FACTOR = 0.54;
+const RADIUS_FACTOR = 0.5;
 /**
  * The band travels right-to-left, so both the idle drift and the
  * scroll-driven travel are negative shifts along the arc.
@@ -32,12 +32,13 @@ const IDLE_LOOPS_PER_SEC = -1 / 90;
 const POINTER_PUSH = 0.014;
 const HOVER_SCALE = 1.14;
 /**
- * Share of each slot's arc taken up by the artwork. The coiled ring stays
- * airy like the Figma hero; the unrolled strip opens the cards up so the
- * work is actually readable.
+ * Share of each slot's arc taken up by the artwork. The coiled ring is
+ * dense and small-carded like the Figma hero. Unrolled, half the slots have
+ * dropped away, so the survivors are measured against a double-width slot
+ * to open the paintings up.
  */
-const CARD_FILL_RING = 0.6;
-const CARD_FILL_LINE = 0.92;
+const CARD_FILL_RING = 0.62;
+const CARD_FILL_LINE = 0.72;
 
 /** Smoothed pointer, in normalised [-1, 1] screen coordinates. */
 const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 };
@@ -155,8 +156,16 @@ function WorkPlane({
     );
     const hoverScale = 1 + (HOVER_SCALE - 1) * hoverEase.current;
 
-    const fill = THREE.MathUtils.lerp(CARD_FILL_RING, CARD_FILL_LINE, e);
-    const cardW = (circumference / total) * fill * hoverScale;
+    // Odd slots exist only to pack the coiled ring; they retire during the
+    // unroll so the strip shows each painting exactly once. The survivors
+    // are then sized against a slot twice as wide.
+    const slotArc = circumference / total;
+    const cardW =
+      THREE.MathUtils.lerp(
+        CARD_FILL_RING * slotArc,
+        CARD_FILL_LINE * slotArc * 2,
+        e,
+      ) * hoverScale;
     const cardH = cardW / aspect;
 
     mesh.position.set(x, 0, z);
@@ -168,10 +177,14 @@ function WorkPlane({
     // Near edge of the ring sits at z = 0, far side at z = -2r.
     const depth = THREE.MathUtils.clamp((z + 2 * radius) / (2 * radius), 0, 1);
     let opacity = THREE.MathUtils.lerp(0.25, 1, depth);
+    if (index % 2 === 1) opacity *= 1 - e;
     if (p > FADE_START) {
       opacity *= 1 - THREE.MathUtils.smoothstep(p, FADE_START, 1);
     }
     material.opacity = opacity;
+
+    // Skips both drawing and raycasting, so retired cards cannot be hovered.
+    mesh.visible = opacity > 0.01;
   });
 
   return (

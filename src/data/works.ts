@@ -23,9 +23,13 @@ export const works: Work[] = [
   { id: "w09", src: "/images/works/work-09.png", width: 476, height: 970 },
 ];
 
-// The Figma hero shows a densely populated ring. With only nine works
-// available we walk the set twice around the circle so opposite sides
-// never repeat side by side. Drop to 1 once there are ~18 real works.
+// The coiled ring needs roughly twice as many cards as there are works to
+// look as dense as the Figma hero, but the unrolled strip must never repeat
+// a painting. Walking the set twice gives both: because the slot count (18)
+// and the work count (9) differ by a factor of two, every *other* slot
+// carries a distinct work — `works[(2k) % 9]` for k = 0..8 covers all nine.
+// The ring therefore drops its odd slots as it unrolls, leaving nine unique
+// paintings evenly spaced. See CARD_FILL_LINE in works-ring.tsx.
 export const ringRepeats = 2;
 
 export const ringSlots = Array.from(

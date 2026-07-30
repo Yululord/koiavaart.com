@@ -44,7 +44,7 @@ export function GalleryContact() {
           scaled proportionally with the viewport. */}
       <div
         aria-hidden
-        className="pointer-events-none relative mt-10 w-full"
+        className="pointer-events-none relative mt-10 w-full overflow-hidden"
         style={{ aspectRatio: `${collageFrame.width} / ${collageFrame.height}` }}
       >
         {collagePieces.map((piece) => (
@@ -56,7 +56,11 @@ export function GalleryContact() {
               top: `${(piece.top / collageFrame.height) * 100}%`,
               width: `${(piece.width / collageFrame.width) * 100}%`,
               height: `${(piece.height / collageFrame.height) * 100}%`,
-              transform: piece.flipped ? "rotate(180deg)" : undefined,
+              transform: piece.mirrored
+                ? "scaleX(-1)"
+                : piece.upsideDown
+                  ? "rotate(180deg)"
+                  : undefined,
             }}
           >
             <Image
@@ -65,6 +69,7 @@ export function GalleryContact() {
               fill
               sizes="(min-width: 1440px) 30vw, 40vw"
               className="object-cover"
+              style={{ objectPosition: piece.objectPosition }}
             />
           </div>
         ))}
