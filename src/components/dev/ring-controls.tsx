@@ -4,7 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import {
   ringConfig,
   ringConfigRanges,
-  ringSlotCount,
+  ringKeptCount,
   ringSpacingActual,
   ringTotalCount,
   setRingConfig,
@@ -47,6 +47,7 @@ const GROUPS: Group[] = [
       "idleSpeed",
       "stripTravel",
       "pointerPush",
+      "pointerTilt",
       "unwindEnd",
       "fadeStart",
     ],
@@ -74,6 +75,7 @@ const LABELS: Partial<Record<keyof RingConfig, string>> = {
   idleSpeed: "Idle speed",
   stripTravel: "Scroll travel",
   pointerPush: "Mouse parallax",
+  pointerTilt: "Mouse tilt",
   unwindEnd: "Unwrap ends at",
   fadeStart: "Fade out starts at",
   fov: "Field of view",
@@ -138,7 +140,7 @@ export function RingControls() {
         <div className="flex justify-between">
           <span className="text-white/60">Cards on ring</span>
           <span>
-            {ringTotalCount()} ({ringSlotCount()} kept)
+            {ringTotalCount()} ({ringKeptCount()} kept)
           </span>
         </div>
         <div className="flex justify-between">

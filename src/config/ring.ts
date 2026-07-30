@@ -73,8 +73,14 @@ export type RingConfig = {
   idleSpeed: number;
   /** Loops the strip travels sideways across the scroll runway. */
   stripTravel: number;
-  /** Loops of parallax at full pointer deflection. Keep below one slot. */
+  /**
+   * How far the pointer slides the band, in loops at full deflection. Worth
+   * keeping under half a card slot, or cards drift out from under the
+   * cursor while you are hovering one.
+   */
   pointerPush: number;
+  /** How far the pointer tips the cylinder, in radians at full deflection. */
+  pointerTilt: number;
   /** Scroll progress at which the circle has fully opened into the line. */
   unwindEnd: number;
   /** Scroll progress at which the strip starts fading out. */
@@ -108,9 +114,11 @@ export const ringConfig: RingConfig = {
   jitterFlatten: 1,
   depthFade: 0.25,
 
-  idleSpeed: -1 / 90,
-  stripTravel: -1.2,
-  pointerPush: 0.014,
+  // Positive runs the band left-to-right.
+  idleSpeed: 1 / 90,
+  stripTravel: 1.2,
+  pointerPush: 0.05,
+  pointerTilt: 0.12,
   unwindEnd: 0.42,
   fadeStart: 0.9,
 
@@ -142,13 +150,18 @@ export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]
 
   idleSpeed: [-0.06, 0.06, 0.001],
   stripTravel: [-3, 3, 0.05],
-  pointerPush: [0, 0.1, 0.002],
+  pointerPush: [0, 0.2, 0.002],
+  pointerTilt: [0, 0.5, 0.005],
   unwindEnd: [0.1, 0.9, 0.01],
   fadeStart: [0.5, 1, 0.01],
 
   fov: [20, 80, 1],
   hoverScale: [1, 1.6, 0.01],
 };
+
+import { works as workList } from "@/data/works";
+
+const workCount = workList.length;
 
 /**
  * How many cards it takes to close the cylinder at the current radius and
@@ -167,6 +180,14 @@ export function ringSlotCount() {
 /** Every card on the ring, including the extras that fill it out. */
 export function ringTotalCount() {
   return ringSlotCount() * Math.max(1, Math.round(ringConfig.repeats));
+}
+
+/**
+ * Cards that survive into the line — one per work, so the strip can never
+ * repeat a painting however the cylinder is tuned.
+ */
+export function ringKeptCount() {
+  return Math.min(workCount, ringTotalCount());
 }
 
 /** The spacing the ring actually settles on, once quantised to whole cards. */

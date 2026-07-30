@@ -26,28 +26,45 @@ export const works: Work[] = [
 /**
  * Lays out the cylinder.
  *
- * `primaryCount` cards survive into the unrolled line; `repeats` says how
- * many extra cards to pack between them to fill the coiled ring out. The
- * survivors are placed at a fixed stride so that when the extras retire,
- * what is left is still evenly spaced — the reason the survivor cannot
- * simply be "the first N slots", which would leave a gap in the ring.
+ * `total` is however many cards it takes to fill the ring at the chosen
+ * radius, gap and fill multiplier. Out of those, exactly one card per work
+ * is marked to survive into the unrolled line, so the line can never repeat
+ * a painting no matter how the cylinder is tuned. The survivors are spread
+ * evenly across the ring rather than taken from the front, so retiring the
+ * rest leaves an even ring instead of a gap.
  *
- * Survivors walk the works in order; the extras start from the far side of
- * the list so a painting and its double never end up side by side.
+ * `lineIndex` is a card's slot in the resolved line: a whole number for the
+ * survivors, and the fractional position in between for the fillers, which
+ * keeps their motion sensible while they fade.
  */
-export function buildRingSlots(primaryCount: number, repeats: number) {
-  const stride = Math.max(1, Math.round(repeats));
-  const total = Math.max(1, primaryCount) * stride;
-  const count = works.length;
+export function buildRingSlots(total: number) {
+  const slotCount = Math.max(1, Math.round(total));
+  const keptCount = Math.min(works.length, slotCount);
 
-  return Array.from({ length: total }, (_, i) => {
-    const rank = Math.floor(i / stride);
-    const offset = i % stride;
-    const isPrimary = offset === 0;
+  // Evenly spaced survivor positions, one per work.
+  const keptAt = new Map<number, number>();
+  for (let k = 0; k < keptCount; k++) {
+    keptAt.set(Math.round((k * slotCount) / keptCount), k);
+  }
+
+  let fillerRank = 0;
+
+  return Array.from({ length: slotCount }, (_, i) => {
+    const kept = keptAt.get(i);
+    const isPrimary = kept !== undefined;
+
+    // Fillers draw from the far side of the list so a painting and its
+    // double are never neighbours on the ring.
     const workIndex = isPrimary
-      ? rank % count
-      : (rank + Math.floor(count / 2) + offset) % count;
+      ? kept
+      : (fillerRank++ + Math.floor(works.length / 2)) % works.length;
 
-    return { ...works[workIndex], slot: i, isPrimary };
+    return {
+      ...works[workIndex],
+      slot: i,
+      isPrimary,
+      lineIndex: isPrimary ? kept : (i * keptCount) / slotCount,
+      keptCount,
+    };
   });
 }

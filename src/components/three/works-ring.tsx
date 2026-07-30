@@ -8,7 +8,7 @@ import { buildRingSlots } from "@/data/works";
 import { ringScrollProgress } from "@/lib/scroll-progress";
 import {
   ringConfig,
-  ringSlotCount,
+  ringTotalCount,
   signedJitter,
   subscribeRingConfig,
 } from "@/config/ring";
@@ -60,16 +60,16 @@ function WorkPlane({
   aspect,
   index,
   total,
-  primaryCount,
-  stride,
+  lineIndex,
+  keptCount,
   isPrimary,
 }: {
   src: string;
   aspect: number;
   index: number;
   total: number;
-  primaryCount: number;
-  stride: number;
+  lineIndex: number;
+  keptCount: number;
   isPrimary: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null!);
@@ -116,11 +116,11 @@ function WorkPlane({
     const ringSpacing = (2 * Math.PI * radius) / total;
     const lineSpacing = vw * cfg.lineSpacing;
     const ringPos = (index - (total - 1) / 2) * ringSpacing;
-    const linePos = (index / stride - (primaryCount - 1) / 2) * lineSpacing;
+    const linePos = (lineIndex - (keptCount - 1) / 2) * lineSpacing;
 
     const period = THREE.MathUtils.lerp(
       2 * Math.PI * radius,
-      primaryCount * lineSpacing,
+      keptCount * lineSpacing,
       e,
     );
 
@@ -221,12 +221,8 @@ function WorkPlane({
 
 function Ring() {
   const groupRef = useRef<THREE.Group>(null!);
-  const primaryCount = useConfigValue(ringSlotCount);
-  const stride = useConfigValue(() => Math.max(1, Math.round(ringConfig.repeats)));
-  const slots = useMemo(
-    () => buildRingSlots(primaryCount, stride),
-    [primaryCount, stride],
-  );
+  const total = useConfigValue(ringTotalCount);
+  const slots = useMemo(() => buildRingSlots(total), [total]);
 
   useFrame((_, delta) => {
     const group = groupRef.current;
@@ -239,7 +235,8 @@ function Ring() {
     const e = unwindAmount(ringScrollProgress());
 
     // Tilt unwinds to zero so the resolved strip faces the camera square on.
-    group.rotation.x = (ringConfig.tiltX + pointer.y * 0.07) * (1 - e);
+    group.rotation.x =
+      (ringConfig.tiltX + pointer.y * ringConfig.pointerTilt) * (1 - e);
     group.rotation.z = ringConfig.tiltZ * (1 - e);
   });
 
@@ -252,8 +249,8 @@ function Ring() {
           aspect={work.width / work.height}
           index={index}
           total={slots.length}
-          primaryCount={primaryCount}
-          stride={stride}
+          lineIndex={work.lineIndex}
+          keptCount={work.keptCount}
           isPrimary={work.isPrimary}
         />
       ))}
