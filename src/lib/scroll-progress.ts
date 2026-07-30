@@ -1,5 +1,6 @@
 import { RING_RUNWAY_ID } from "@/lib/constants";
 
+let forcedProgress: number | null | undefined;
 let cachedRunway: HTMLElement | null = null;
 let lastStamp = -1;
 let lastValue = 0;
@@ -12,6 +13,19 @@ let lastValue = 0;
  * programmatic jumps.
  */
 export function ringScrollProgress(): number {
+  // Dev escape hatch: `?p=0.6` pins the sequence so any point in the
+  // ring → line transition can be inspected without scrolling.
+  if (process.env.NODE_ENV !== "production") {
+    if (forcedProgress === undefined) {
+      const raw = new URLSearchParams(window.location.search).get("p");
+      const parsed = raw === null ? NaN : Number.parseFloat(raw);
+      forcedProgress = Number.isFinite(parsed)
+        ? Math.max(0, Math.min(1, parsed))
+        : null;
+    }
+    if (forcedProgress !== null) return forcedProgress;
+  }
+
   const stamp = performance.now();
   if (stamp === lastStamp) return lastValue;
   lastStamp = stamp;

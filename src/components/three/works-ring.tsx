@@ -11,17 +11,42 @@ const textureLoader = new THREE.TextureLoader();
 
 const FOV = 45;
 /** Ring is tipped back so its far side rides higher on screen. */
-const TILT = -0.1;
-/** Radians per second of idle rotation. */
-const IDLE_SPIN = 0.055;
-/** Progress at which the ring has fully unwound into the line. */
-const UNWIND_END = 0.55;
-/** Progress at which the resolved line starts fading out. */
-const FADE_START = 0.8;
+const TILT = -0.09;
+/** Progress at which the circle has fully opened into the line. */
+const UNWIND_END = 0.42;
+/** Progress at which the strip starts fading out before the About section. */
+const FADE_START = 0.9;
 /** Ring radius as a fraction of viewport width. */
 const RADIUS_FACTOR = 0.54;
+/** Loops the strip travels sideways between unwind and end of runway. */
+const STRIP_TRAVEL = 1.2;
+/** Gentle idle drift, in loops per second. */
+const IDLE_LOOPS_PER_SEC = 1 / 90;
+/**
+ * How far the pointer nudges the carousel, as a fraction of one loop.
+ * Kept well under one slot (1/18 of a loop) so parallax never drags a card
+ * out from under the cursor mid-hover.
+ */
+const POINTER_PUSH = 0.014;
+const HOVER_SCALE = 1.14;
+/**
+ * Share of each slot's arc taken up by the artwork. The coiled ring stays
+ * airy like the Figma hero; the unrolled strip opens the cards up so the
+ * work is actually readable.
+ */
+const CARD_FILL_RING = 0.6;
+const CARD_FILL_LINE = 0.92;
 
-/** 0 while the ring is coiled, 1 once it has resolved into the line. */
+/** Smoothed pointer, in normalised [-1, 1] screen coordinates. */
+const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 };
+
+/** Wraps a value into [-span/2, span/2). */
+function wrapSigned(value: number, span: number) {
+  const half = span / 2;
+  return ((((value + half) % span) + span) % span) - half;
+}
+
+/** 0 while coiled, 1 once the circle has opened into a straight line. */
 function unwindAmount(p: number) {
   return THREE.MathUtils.smoothstep(
     THREE.MathUtils.clamp(p / UNWIND_END, 0, 1),
@@ -41,7 +66,7 @@ function CameraRig() {
       makeDefault
       fov={FOV}
       near={1}
-      far={distance * 12}
+      far={distance * 16}
       position={[0, 0, distance]}
     />
   );
@@ -60,6 +85,8 @@ function WorkPlane({
 }) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const materialRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const hovered = useRef(false);
+  const hoverEase = useRef(0);
   const { size } = useThree();
 
   useEffect(() => {
@@ -75,7 +102,14 @@ function WorkPlane({
     };
   }, [src]);
 
-  useFrame(() => {
+  useEffect(() => {
+    return () => {
+      // Never leave the cursor stuck if the plane unmounts while hovered.
+      if (hovered.current) document.body.style.cursor = "";
+    };
+  }, []);
+
+  useFrame((_, delta) => {
     const mesh = meshRef.current;
     const material = materialRef.current;
     if (!mesh || !material) return;
@@ -83,46 +117,55 @@ function WorkPlane({
     const p = ringScrollProgress();
     const e = unwindAmount(p);
     const vw = size.width;
-    const vh = size.height;
 
-    // --- Circle pose -----------------------------------------------------
-    // Planes ring the group's own origin, each facing outward, so the far
-    // half presents its back and reads mirrored — as in the Figma hero.
-    const theta = (index / total) * Math.PI * 2;
     const radius = vw * RADIUS_FACTOR;
-    const ringX = Math.sin(theta) * radius;
-    const ringZ = Math.cos(theta) * radius;
-    const ringY = -vh * 0.11;
-    const ringCardW = vw * 0.088;
-    const ringCardH = ringCardW / aspect;
+    const circumference = 2 * Math.PI * radius;
 
-    // --- Line pose -------------------------------------------------------
-    const spacing = (vw * 0.94) / total;
-    const lineX = (index - (total - 1) / 2) * spacing;
-    const lineCardW = spacing * 0.84;
-    const lineCardH = lineCardW / aspect;
-
-    mesh.position.set(
-      THREE.MathUtils.lerp(ringX, lineX, e),
-      THREE.MathUtils.lerp(ringY, 0, e),
-      THREE.MathUtils.lerp(ringZ, 0, e),
-    );
-    mesh.scale.set(
-      THREE.MathUtils.lerp(ringCardW, lineCardW, e),
-      THREE.MathUtils.lerp(ringCardH, lineCardH, e),
-      1,
-    );
-    mesh.rotation.y = THREE.MathUtils.lerp(theta, 0, e);
-
-    // Depth haze on the ring's far side, resolving to solid in the line.
-    const depth = (ringZ + radius) / (2 * radius);
-    let opacity = THREE.MathUtils.lerp(
-      THREE.MathUtils.lerp(0.2, 1, depth),
-      1,
-      e,
+    // Arc-length position of this card along the band. Everything that
+    // moves the carousel — idle drift, scroll, pointer — is expressed as a
+    // shift along the arc, so the cards always travel in the direction of
+    // rotation rather than being squeezed inward.
+    const idle =
+      (performance.now() / 1000) * IDLE_LOOPS_PER_SEC * circumference;
+    const scrolled =
+      (Math.max(0, p - UNWIND_END) / (1 - UNWIND_END)) *
+      circumference *
+      STRIP_TRAVEL;
+    const nudge = pointer.x * circumference * POINTER_PUSH;
+    const s = wrapSigned(
+      (index / total - 0.5) * circumference + idle + scrolled + nudge,
+      circumference,
     );
 
-    // Clear the stage before the About section arrives.
+    // Unroll: the band keeps its arc length while its radius grows toward
+    // infinity, so the circle opens out into a straight line instead of
+    // collapsing into a spiral. k = 1 is the closed ring, k → 0 is flat.
+    const k = Math.max(1 - e, 1e-4);
+    const r = radius / k;
+    const phi = s / r;
+    const x = r * Math.sin(phi);
+    const z = r * Math.cos(phi) - r;
+
+    hoverEase.current = THREE.MathUtils.lerp(
+      hoverEase.current,
+      hovered.current ? 1 : 0,
+      1 - Math.pow(0.002, delta),
+    );
+    const hoverScale = 1 + (HOVER_SCALE - 1) * hoverEase.current;
+
+    const fill = THREE.MathUtils.lerp(CARD_FILL_RING, CARD_FILL_LINE, e);
+    const cardW = (circumference / total) * fill * hoverScale;
+    const cardH = cardW / aspect;
+
+    mesh.position.set(x, 0, z);
+    mesh.scale.set(cardW, cardH, 1);
+    mesh.rotation.y = phi;
+    // Nearer cards draw last so they sit on top of the hazy far side.
+    mesh.renderOrder = Math.round(z);
+
+    // Near edge of the ring sits at z = 0, far side at z = -2r.
+    const depth = THREE.MathUtils.clamp((z + 2 * radius) / (2 * radius), 0, 1);
+    let opacity = THREE.MathUtils.lerp(0.25, 1, depth);
     if (p > FADE_START) {
       opacity *= 1 - THREE.MathUtils.smoothstep(p, FADE_START, 1);
     }
@@ -130,7 +173,18 @@ function WorkPlane({
   });
 
   return (
-    <mesh ref={meshRef}>
+    <mesh
+      ref={meshRef}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        hovered.current = true;
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        hovered.current = false;
+        document.body.style.cursor = "";
+      }}
+    >
       <planeGeometry args={[1, 1]} />
       <meshBasicMaterial
         ref={materialRef}
@@ -146,21 +200,17 @@ function WorkPlane({
 
 function Ring() {
   const groupRef = useRef<THREE.Group>(null!);
-  const spin = useRef(0);
-  const { size } = useThree();
 
   useFrame((_, delta) => {
     const group = groupRef.current;
     if (!group) return;
 
-    const e = unwindAmount(ringScrollProgress());
-    spin.current += delta * IDLE_SPIN;
+    const smoothing = 1 - Math.pow(0.005, delta);
+    pointer.x = THREE.MathUtils.lerp(pointer.x, pointer.targetX, smoothing);
+    pointer.y = THREE.MathUtils.lerp(pointer.y, pointer.targetY, smoothing);
 
-    // Rotation, tilt and depth offset all unwind to zero, leaving a
-    // straight, camera-facing row at z = 0.
-    group.rotation.y = spin.current * (1 - e);
-    group.rotation.x = TILT * (1 - e);
-    group.position.z = -size.width * RADIUS_FACTOR * (1 - e);
+    const e = unwindAmount(ringScrollProgress());
+    group.rotation.x = (TILT + pointer.y * 0.07) * (1 - e);
   });
 
   return (
@@ -179,8 +229,17 @@ function Ring() {
 }
 
 export function WorksRing() {
+  useEffect(() => {
+    const onMove = (event: PointerEvent) => {
+      pointer.targetX = (event.clientX / window.innerWidth) * 2 - 1;
+      pointer.targetY = (event.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-10" aria-hidden>
+    <div className="fixed inset-0 z-10" aria-hidden>
       <Canvas gl={{ alpha: true, antialias: true }} dpr={[1, 2]}>
         <CameraRig />
         <Ring />

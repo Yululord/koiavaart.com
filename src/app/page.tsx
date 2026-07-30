@@ -1,5 +1,6 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { Brand } from "@/components/brand";
 import { WorksRing } from "@/components/three/works-ring";
 import { Hero } from "@/components/sections/hero";
 import { AboutSection } from "@/components/sections/about-section";
@@ -10,6 +11,7 @@ export default function Home() {
     <>
       <WorksRing />
       <SiteHeader />
+      <Brand />
       <main>
         <Hero />
         <AboutSection />

@@ -5,7 +5,7 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="relative z-30 mx-auto flex w-full max-w-6xl flex-col gap-12 bg-white px-6 py-24 sm:px-10 sm:py-32"
+      className="relative z-20 mx-auto flex w-full max-w-6xl flex-col gap-12 bg-white px-6 py-24 sm:px-10 sm:py-32"
     >
       <p className="font-display max-w-3xl text-3xl uppercase leading-none text-ink sm:text-5xl">
         &ldquo;{about.quote}&rdquo;

@@ -12,13 +12,3 @@ export const about = {
     height: 4096,
   },
 };
-
-export const featuredArtwork = {
-  title: "The Fragility Of Being",
-  medium: "Oil on Canvas",
-  dimensions: "31.5 x 31.5 in",
-  description: [
-    "Valeria's work starts with a simple action — a line — repeated until it becomes something else.",
-    "Her drawings aren't planned in detail. They grow through process: layering, adjusting, pushing against their own structure.",
-  ],
-};
