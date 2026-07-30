@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import "lenis/dist/lenis.css";
 import "./globals.css";
+import { SmoothScroll } from "@/components/smooth-scroll";
 
 // General Sans (Fontshare, free licence) — the single family used across
 // the design. Self-hosted so there is no runtime dependency on the CDN.
@@ -26,7 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={generalSans.variable}>
-      <body>{children}</body>
+      <body>
+        <SmoothScroll>{children}</SmoothScroll>
+      </body>
     </html>
   );
 }

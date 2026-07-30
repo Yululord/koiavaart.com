@@ -111,7 +111,11 @@ export function RingControls() {
   };
 
   return (
-    <div className="fixed right-4 top-4 z-[100] max-h-[92vh] w-72 overflow-y-auto rounded-lg bg-black/85 p-4 font-mono text-[11px] text-white shadow-xl backdrop-blur">
+    // data-lenis-prevent keeps the panel's own scrolling out of Lenis's hands.
+    <div
+      data-lenis-prevent
+      className="fixed right-4 top-4 z-[100] max-h-[92vh] w-72 overflow-y-auto overscroll-contain rounded-lg bg-black/85 p-4 font-mono text-[11px] text-white shadow-xl backdrop-blur"
+    >
       <div className="mb-3 flex items-center justify-between">
         <span className="font-semibold tracking-wide">Cylinder</span>
         <button

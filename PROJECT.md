@@ -149,6 +149,12 @@ looks right, hit **Copy config**, and paste over the defaults in
   *not* GSAP ScrollTrigger — it silently failed to update in the preview
   harness, and reading layout directly is simpler and survives resizes and
   restored scroll positions.
+- **Smooth scroll** (`src/components/smooth-scroll.tsx`): Lenis, mounted at
+  the root. It wraps native scroll rather than transforming a container, so
+  `fixed`, `sticky` and `getBoundingClientRect()` all still behave and the
+  hero sequence needed no changes. Mounting it above the page also means its
+  animation frame runs before the hero's, so scroll is written before it is
+  read. Disabled entirely under `prefers-reduced-motion`.
 - **Stacking**: `position: sticky` creates its own stacking context, so the
   hero's z-index must live on the sticky element itself, not its children,
   or the fixed ring canvas paints over the wordmark.
