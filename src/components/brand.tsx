@@ -18,15 +18,14 @@ function smoothRange(p: number, start: number, end: number) {
   return c * c * (3 - 2 * c);
 }
 
-/** How far through the runway the shrink-into-the-header happens. */
-const titleMorph = (p: number) => smoothRange(p, 0.03, 0.3);
-
 /**
- * The tagline follows a beat later. While the wordmark is still wide it
- * has to stay clear of it; only once the wordmark is small and centred can
- * the tagline share the header row with it.
+ * How far through the runway the shrink-into-the-header happens. The
+ * wordmark and the tagline share this one curve so they move together.
+ * The tagline used to lag, to stay clear of a wordmark that was drifting
+ * left; now that the wordmark shrinks about the centre, the side captions
+ * are never in its way and can travel with it.
  */
-const taglineMorph = (p: number) => smoothRange(p, 0.16, 0.34);
+const morph = (p: number) => smoothRange(p, 0.03, 0.3);
 
 export function Brand() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -59,25 +58,28 @@ export function Brand() {
         : 1;
       const headerScale = HEADER_FONT / BASE_FONT;
 
-      const p = ringScrollProgress();
-      const t = titleMorph(p);
+      const t = morph(ringScrollProgress());
       const scale = heroScale + (headerScale - heroScale) * t;
 
-      const heroLeft = padX;
-      const headerLeft = (vw - naturalWidth * scale) / 2;
-      const left = heroLeft + (headerLeft - heroLeft) * t;
+      // Always centred, at every size. Interpolating position and scale
+      // separately made the wordmark drift left mid-shrink, because the
+      // centred target keeps moving as the scale changes. Deriving left
+      // from the current scale keeps it centred throughout — and at full
+      // size that resolves to exactly the page padding, so the hero still
+      // sits flush to both edges.
+      const left = (vw - naturalWidth * scale) / 2;
       const top = padTop + (HEADER_TITLE_TOP - padTop) * t;
 
       title.style.transform = `translate(${left - padX}px, ${top - padTop}px) scale(${scale})`;
 
-      // Tagline rides just under the wordmark, then joins the header row.
-      const tt = taglineMorph(p);
+      // Tagline rides just under the wordmark and travels on the same
+      // curve, so the two read as one movement.
       const heroTaglineTop =
         padTop + BASE_FONT * LINE_HEIGHT * heroScale + 18;
       const taglineTop =
-        heroTaglineTop + (HEADER_TAGLINE_TOP - heroTaglineTop) * tt;
+        heroTaglineTop + (HEADER_TAGLINE_TOP - heroTaglineTop) * t;
       tagline.style.transform = `translateY(${taglineTop}px)`;
-      tagline.style.fontSize = `${16 + (14 - 16) * tt}px`;
+      tagline.style.fontSize = `${16 + (14 - 16) * t}px`;
 
       frame = requestAnimationFrame(tick);
     };
