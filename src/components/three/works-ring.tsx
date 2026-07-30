@@ -18,10 +18,12 @@ const UNWIND_END = 0.42;
 const FADE_START = 0.9;
 /** Ring radius as a fraction of viewport width. */
 const RADIUS_FACTOR = 0.54;
-/** Loops the strip travels sideways between unwind and end of runway. */
-const STRIP_TRAVEL = 1.2;
-/** Gentle idle drift, in loops per second. */
-const IDLE_LOOPS_PER_SEC = 1 / 90;
+/**
+ * The band travels right-to-left, so both the idle drift and the
+ * scroll-driven travel are negative shifts along the arc.
+ */
+const STRIP_TRAVEL = -1.2;
+const IDLE_LOOPS_PER_SEC = -1 / 90;
 /**
  * How far the pointer nudges the carousel, as a fraction of one loop.
  * Kept well under one slot (1/18 of a loop) so parallax never drags a card
