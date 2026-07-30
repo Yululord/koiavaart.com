@@ -60,11 +60,17 @@ function WorkPlane({
   aspect,
   index,
   total,
+  primaryCount,
+  stride,
+  isPrimary,
 }: {
   src: string;
   aspect: number;
   index: number;
   total: number;
+  primaryCount: number;
+  stride: number;
+  isPrimary: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const materialRef = useRef<THREE.MeshBasicMaterial>(null!);
@@ -105,14 +111,18 @@ function WorkPlane({
     const radius = vw * cfg.radiusFactor;
 
     // Ring spacing is pinned to whatever divides the circumference exactly,
-    // so the cylinder always closes; the line is free to use its own. The
-    // band's wrap period follows the spacing currently in effect.
-    const spacing = THREE.MathUtils.lerp(
-      (2 * Math.PI * radius) / total,
-      vw * cfg.lineSpacing,
+    // so the cylinder always closes. The line spaces the *survivors* by
+    // lineSpacing; the extras land between them and have faded by then.
+    const ringSpacing = (2 * Math.PI * radius) / total;
+    const lineSpacing = vw * cfg.lineSpacing;
+    const ringPos = (index - (total - 1) / 2) * ringSpacing;
+    const linePos = (index / stride - (primaryCount - 1) / 2) * lineSpacing;
+
+    const period = THREE.MathUtils.lerp(
+      2 * Math.PI * radius,
+      primaryCount * lineSpacing,
       e,
     );
-    const period = spacing * total;
 
     // Arc-length position of this card along the band. Idle drift, scroll
     // and pointer parallax are all shifts along the arc, so cards always
@@ -124,7 +134,7 @@ function WorkPlane({
       cfg.stripTravel;
     const nudge = pointer.x * period * cfg.pointerPush;
     const s = wrapSigned(
-      (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
+      THREE.MathUtils.lerp(ringPos, linePos, e) + idle + scrolled + nudge,
       period,
     );
 
@@ -157,7 +167,7 @@ function WorkPlane({
       hoverScale;
     const cardH = cardW / aspect;
     const y =
-      vh * cfg.verticalOffset +
+      vh * THREE.MathUtils.lerp(cfg.verticalOffset, cfg.verticalOffsetLine, e) +
       signedJitter(index, 2) * cfg.heightJitter * vh * jitter;
 
     mesh.position.set(x, y, z);
@@ -169,6 +179,13 @@ function WorkPlane({
     // Near edge of the ring sits at z = 0, far side at z = -2r.
     const depth = THREE.MathUtils.clamp((z + 2 * radius) / (2 * radius), 0, 1);
     let opacity = THREE.MathUtils.lerp(cfg.depthFade, 1, depth);
+
+    // Filler cards bow out early, while the cylinder is still a cylinder,
+    // so the unwrap itself plays out on a set that is no longer changing.
+    if (!isPrimary) {
+      opacity *= 1 - THREE.MathUtils.smoothstep(p, 0, cfg.duplicateFadeEnd);
+    }
+
     if (p > cfg.fadeStart) {
       opacity *= 1 - THREE.MathUtils.smoothstep(p, cfg.fadeStart, 1);
     }
@@ -204,8 +221,12 @@ function WorkPlane({
 
 function Ring() {
   const groupRef = useRef<THREE.Group>(null!);
-  const slotCount = useConfigValue(ringSlotCount);
-  const slots = useMemo(() => buildRingSlots(slotCount), [slotCount]);
+  const primaryCount = useConfigValue(ringSlotCount);
+  const stride = useConfigValue(() => Math.max(1, Math.round(ringConfig.repeats)));
+  const slots = useMemo(
+    () => buildRingSlots(primaryCount, stride),
+    [primaryCount, stride],
+  );
 
   useFrame((_, delta) => {
     const group = groupRef.current;
@@ -231,6 +252,9 @@ function Ring() {
           aspect={work.width / work.height}
           index={index}
           total={slots.length}
+          primaryCount={primaryCount}
+          stride={stride}
+          isPrimary={work.isPrimary}
         />
       ))}
     </group>

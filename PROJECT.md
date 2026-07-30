@@ -112,10 +112,17 @@ https://experiment.obys.agency/ (Obys "Experiment Space")
   Vercel.
 
 ## Tuning the hero cylinder
-Every parameter lives in `src/config/ring.ts`. Card spacing and card width are
-separate controls, and the coiled cylinder and the unrolled line each get
-their own pair — so the ring can be tight and small while the line is wide and
-large, or vice versa.
+Every parameter lives in `src/config/ring.ts`. Spacing, card width and
+vertical position are separate controls, and the coiled cylinder and the
+unrolled line each get their own set — so the ring can sit low, tight and
+small while the line sits centred, wide and large.
+
+**Fill cards ×** packs extra cards between the ones that survive into the
+line, to make the cylinder look full without those extras ever reaching the
+strip. They fade out early (**Fill cards gone by**, default progress 0.12),
+while the ring is still a ring — deliberately well before the unwrap, so the
+unwrap itself plays out on a set that is no longer changing. Survivors sit at
+a fixed stride so that removing the extras leaves them evenly spaced.
 
 One asymmetry worth knowing: a cylinder only looks seamless if its cards
 divide the circumference exactly, so the ring's card count is a whole number

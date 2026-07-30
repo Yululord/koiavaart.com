@@ -19,6 +19,19 @@ export type RingConfig = {
   ringSpacing: number;
   /** Card width on the cylinder, as a fraction of viewport width. */
   cardWidthRing: number;
+  /**
+   * Extra cards packed between the ones that survive into the line, to fill
+   * the cylinder out. 1 keeps only the survivors; 2 puts one extra card in
+   * every gap, and so on. These extras exist for the coiled ring alone and
+   * retire before it opens.
+   */
+  repeats: number;
+  /**
+   * Progress by which the extra cards have gone. Kept well before the
+   * cylinder has opened, so they thin out while it is still a ring rather
+   * than blinking out mid-unwrap.
+   */
+  duplicateFadeEnd: number;
 
   // ---- Line -------------------------------------------------------------
   /**
@@ -32,6 +45,12 @@ export type RingConfig = {
   // ---- Placement --------------------------------------------------------
   /** Cylinder centre, as a fraction of viewport height. Negative = lower. */
   verticalOffset: number;
+  /**
+   * Where the resolved line sits, as a fraction of viewport height. Separate
+   * from the cylinder's, because a tilted ring usually wants dropping while
+   * the flat strip still wants to sit centred.
+   */
+  verticalOffsetLine: number;
 
   // ---- Shape ------------------------------------------------------------
   /** Tilt of the whole cylinder about its horizontal axis, radians. */
@@ -71,12 +90,15 @@ export type RingConfig = {
 export const ringConfig: RingConfig = {
   radiusFactor: 0.42,
   ringSpacing: 0.293,
-  cardWidthRing: 0.17,
+  cardWidthRing: 0.115,
+  repeats: 2,
+  duplicateFadeEnd: 0.12,
 
   lineSpacing: 0.293,
   cardWidthLine: 0.229,
 
   verticalOffset: -0.04,
+  verticalOffsetLine: 0,
 
   tiltX: -0.09,
   tiltZ: 0,
@@ -101,11 +123,14 @@ export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]
   radiusFactor: [0.15, 1.2, 0.01],
   ringSpacing: [0.06, 0.9, 0.002],
   cardWidthRing: [0.03, 0.6, 0.002],
+  repeats: [1, 4, 1],
+  duplicateFadeEnd: [0.02, 0.4, 0.01],
 
   lineSpacing: [0.06, 1.2, 0.002],
   cardWidthLine: [0.03, 0.8, 0.002],
 
   verticalOffset: [-0.4, 0.4, 0.005],
+  verticalOffsetLine: [-0.4, 0.4, 0.005],
 
   tiltX: [-0.6, 0.6, 0.005],
   tiltZ: [-0.6, 0.6, 0.005],
@@ -137,6 +162,11 @@ export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]
 export function ringSlotCount() {
   const ideal = (2 * Math.PI * ringConfig.radiusFactor) / ringConfig.ringSpacing;
   return Math.max(3, Math.round(ideal));
+}
+
+/** Every card on the ring, including the extras that fill it out. */
+export function ringTotalCount() {
+  return ringSlotCount() * Math.max(1, Math.round(ringConfig.repeats));
 }
 
 /** The spacing the ring actually settles on, once quantised to whole cards. */

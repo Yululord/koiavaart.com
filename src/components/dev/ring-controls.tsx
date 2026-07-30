@@ -6,6 +6,7 @@ import {
   ringConfigRanges,
   ringSlotCount,
   ringSpacingActual,
+  ringTotalCount,
   setRingConfig,
   type RingConfig,
 } from "@/config/ring";
@@ -15,15 +16,18 @@ type Group = { label: string; keys: (keyof RingConfig)[] };
 const GROUPS: Group[] = [
   {
     label: "Cylinder",
-    keys: ["radiusFactor", "ringSpacing", "cardWidthRing"],
+    keys: [
+      "radiusFactor",
+      "ringSpacing",
+      "cardWidthRing",
+      "verticalOffset",
+      "repeats",
+      "duplicateFadeEnd",
+    ],
   },
   {
     label: "Line",
-    keys: ["lineSpacing", "cardWidthLine"],
-  },
-  {
-    label: "Placement",
-    keys: ["verticalOffset"],
+    keys: ["lineSpacing", "cardWidthLine", "verticalOffsetLine"],
   },
   {
     label: "Shape",
@@ -54,9 +58,12 @@ const LABELS: Partial<Record<keyof RingConfig, string>> = {
   radiusFactor: "Radius",
   ringSpacing: "Gap between cards",
   cardWidthRing: "Card width",
+  verticalOffset: "Vertical position",
+  repeats: "Fill cards ×",
+  duplicateFadeEnd: "Fill cards gone by",
   lineSpacing: "Gap between cards",
   cardWidthLine: "Card width",
-  verticalOffset: "Vertical position",
+  verticalOffsetLine: "Vertical position",
   tiltX: "Tilt (up/down)",
   tiltZ: "Tilt (roll)",
   cardRoll: "Card roll (random)",
@@ -127,11 +134,17 @@ export function RingControls() {
         </button>
       </div>
 
-      <div className="mb-3 flex justify-between rounded bg-white/10 px-2 py-1">
-        <span className="text-white/60">Cards to close ring</span>
-        <span>
-          {ringSlotCount()} @ {ringSpacingActual().toFixed(3)}
-        </span>
+      <div className="mb-3 rounded bg-white/10 px-2 py-1">
+        <div className="flex justify-between">
+          <span className="text-white/60">Cards on ring</span>
+          <span>
+            {ringTotalCount()} ({ringSlotCount()} kept)
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-white/60">Gap it settles on</span>
+          <span>{ringSpacingActual().toFixed(3)}</span>
+        </div>
       </div>
 
       {GROUPS.map((group) => (

@@ -24,14 +24,30 @@ export const works: Work[] = [
 ];
 
 /**
- * Fills `count` slots around the cylinder, cycling the works as needed. The
- * count comes from the radius and spacing controls; when it exceeds the
- * number of works a painting will recur, which is the trade-off for packing
- * the ring more tightly.
+ * Lays out the cylinder.
+ *
+ * `primaryCount` cards survive into the unrolled line; `repeats` says how
+ * many extra cards to pack between them to fill the coiled ring out. The
+ * survivors are placed at a fixed stride so that when the extras retire,
+ * what is left is still evenly spaced — the reason the survivor cannot
+ * simply be "the first N slots", which would leave a gap in the ring.
+ *
+ * Survivors walk the works in order; the extras start from the far side of
+ * the list so a painting and its double never end up side by side.
  */
-export function buildRingSlots(count: number) {
-  return Array.from({ length: Math.max(1, count) }, (_, i) => ({
-    ...works[i % works.length],
-    slot: i,
-  }));
+export function buildRingSlots(primaryCount: number, repeats: number) {
+  const stride = Math.max(1, Math.round(repeats));
+  const total = Math.max(1, primaryCount) * stride;
+  const count = works.length;
+
+  return Array.from({ length: total }, (_, i) => {
+    const rank = Math.floor(i / stride);
+    const offset = i % stride;
+    const isPrimary = offset === 0;
+    const workIndex = isPrimary
+      ? rank % count
+      : (rank + Math.floor(count / 2) + offset) % count;
+
+    return { ...works[workIndex], slot: i, isPrimary };
+  });
 }
