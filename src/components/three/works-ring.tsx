@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { buildRingSlots } from "@/data/works";
-import { ringScrollProgress } from "@/lib/scroll-progress";
+import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import {
   ringConfig,
   ringTotalCount,
@@ -186,7 +186,9 @@ function WorkPlane({
       opacity *= 1 - THREE.MathUtils.smoothstep(p, 0, cfg.duplicateFadeEnd);
     }
 
-    if (p > cfg.fadeStart) {
+    // At 1 the strip never fades — it scrolls away bodily instead, which is
+    // the default. Lower it to dissolve the band before the runway ends.
+    if (cfg.fadeStart < 1 && p > cfg.fadeStart) {
       opacity *= 1 - THREE.MathUtils.smoothstep(p, cfg.fadeStart, 1);
     }
     material.opacity = opacity;
@@ -238,6 +240,12 @@ function Ring() {
     group.rotation.x =
       (ringConfig.tiltX + pointer.y * ringConfig.pointerTilt) * (1 - e);
     group.rotation.z = ringConfig.tiltZ * (1 - e);
+
+    // Past the end of the runway the band stops being pinned and rides the
+    // page instead, translating up one-for-one with the scroll. One world
+    // unit is one CSS pixel here, and +y is up, so it tracks the page
+    // exactly — and unwinds in reverse on the way back.
+    group.position.y = ringScrollOverflow();
   });
 
   return (

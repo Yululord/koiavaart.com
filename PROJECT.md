@@ -142,6 +142,20 @@ looks right, hit **Copy config**, and paste over the defaults in
 
 `?p=<0–1>` pins the scroll sequence at a given point, which pairs well with
 `?tune` for dialling in a specific moment — e.g. `?tune&p=0.2` for mid-unwrap.
+`?o=<px>` pins how far the band has scrolled away past the end of the runway,
+so `?p=1&o=300` shows the hand-off into the About section.
+
+### Handing off to the next section
+Once the strip has travelled through every work there is nothing left for the
+runway to drive, so the scene stops being pinned and simply rides the page:
+the band translates up one-for-one with the scroll and About slides up over
+it. Because the whole sequence is a pure function of scroll position, this
+reverses exactly — scrolling back up slides the band down, then walks the
+strip backwards, then re-coils it into the cylinder.
+
+The band therefore never dissolves. `fadeStart` is kept as a control but 1
+(the default) disables the fade; lower it only if you want the old behaviour
+where the strip dissolves before the runway ends.
 
 ## Implementation notes
 - **Ring** (`src/components/three/works-ring.tsx`): planes sit on a full 360°

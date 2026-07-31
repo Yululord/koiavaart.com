@@ -77,7 +77,7 @@ const LABELS: Partial<Record<keyof RingConfig, string>> = {
   pointerPush: "Mouse parallax",
   pointerTilt: "Mouse tilt",
   unwindEnd: "Unwrap ends at",
-  fadeStart: "Fade out starts at",
+  fadeStart: "Dissolve at (1 = off)",
   fov: "Field of view",
   hoverScale: "Hover zoom",
 };

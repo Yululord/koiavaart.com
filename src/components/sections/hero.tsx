@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { site } from "@/data/site";
 import { RING_RUNWAY_ID } from "@/lib/constants";
-import { ringScrollProgress } from "@/lib/scroll-progress";
+import { ringScrollOverflow } from "@/lib/scroll-progress";
 
 /**
  * Scroll runway for the hero sequence. The wordmark lives in <Brand /> and
@@ -24,8 +24,11 @@ export function Hero() {
     const tick = () => {
       const el = captionsRef.current;
       if (el) {
-        const p = ringScrollProgress();
-        const t = Math.max(0, Math.min(1, (p - 0.9) / 0.08));
+        // The captions belong to the hero, so they hold for the whole
+        // sequence and then leave with it, rather than fading out while
+        // the strip is still travelling.
+        const over = ringScrollOverflow() / (window.innerHeight * 0.3);
+        const t = Math.max(0, Math.min(1, over));
         const opacity = 1 - t * t * (3 - 2 * t);
         if (opacity !== last) {
           last = opacity;

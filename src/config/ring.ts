@@ -94,25 +94,25 @@ export type RingConfig = {
 };
 
 export const ringConfig: RingConfig = {
-  radiusFactor: 0.63,
-  ringSpacing: 0.416,
+  radiusFactor: 0.68,
+  ringSpacing: 0.306,
   cardWidthRing: 0.092,
   repeats: 2,
-  duplicateFadeEnd: 0.11,
+  duplicateFadeEnd: 0.12,
 
-  lineSpacing: 0.232,
-  cardWidthLine: 0.229,
+  lineSpacing: 0.302,
+  cardWidthLine: 0.206,
 
-  verticalOffset: -0.145,
-  verticalOffsetLine: -0.015,
+  verticalOffset: -0.17,
+  verticalOffsetLine: -0.035,
 
-  tiltX: 0.2,
+  tiltX: 0.17,
   tiltZ: 0,
-  cardRoll: 0.18,
-  heightJitter: 0.175,
-  sizeJitter: 0.46,
+  cardRoll: 0,
+  heightJitter: 0.19,
+  sizeJitter: 0.38,
   jitterFlatten: 1,
-  depthFade: 0.21,
+  depthFade: 0.17,
 
   // Negative runs the band right-to-left — the ring's idle spin and the
   // strip's scroll travel are separate, and both go that way.
@@ -121,11 +121,11 @@ export const ringConfig: RingConfig = {
   pointerPush: 0.048,
   pointerTilt: 0.12,
   unwindEnd: 0.42,
-  // Pulled in from 0.9 so the strip clears sooner and leaves less blank
-  // space ahead of the About section.
-  fadeStart: 0.96,
+  // 1 disables the dissolve: once the strip has run through every work it
+  // scrolls away bodily instead of fading out.
+  fadeStart: 1,
 
-  fov: 51,
+  fov: 49,
   hoverScale: 1.18,
 };
 
