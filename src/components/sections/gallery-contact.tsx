@@ -1,14 +1,13 @@
 import Image from "next/image";
-import { contact } from "@/data/site";
-import { collageFrame, collagePieces } from "@/data/collage";
+import { contact, socialHref } from "@/data/site";
 
 export function GalleryContact() {
   return (
     <section
       id="contact"
-      className="relative z-20 overflow-hidden bg-panel px-6 pt-16 sm:px-10 sm:pt-24"
+      className="relative z-20 overflow-hidden bg-panel pt-16 sm:pt-24"
     >
-      <div className="relative z-10 flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-12">
+      <div className="relative z-10 flex flex-col gap-10 px-6 sm:flex-row sm:items-start sm:justify-between sm:gap-12 sm:px-10">
         <div className="flex flex-col gap-4">
           <p className="font-body text-base text-panel-muted">{contact.note}</p>
           <a
@@ -18,62 +17,46 @@ export function GalleryContact() {
             {contact.email}
           </a>
         </div>
+
+        {/* The label stays put; each handle is its own link, so only the one
+            under the cursor responds. */}
         <div className="grid grid-cols-2 gap-x-8 gap-y-6 sm:flex sm:gap-12">
           {contact.socials.map((social) => (
-            <a
+            <div
               key={social.label}
-              href={social.href}
-              target="_blank"
-              rel="noreferrer"
-              className="flex flex-col items-start gap-1 whitespace-nowrap transition-opacity hover:opacity-70"
+              className="flex flex-col items-start gap-1 whitespace-nowrap"
             >
               <span className="font-body text-sm text-panel-muted">
                 {social.label}
               </span>
-              {social.handles.map((handle) => (
-                <span key={handle} className="font-body text-base text-white">
-                  {handle}
-                </span>
+              {social.handles.map((entry) => (
+                <a
+                  key={entry.handle}
+                  href={socialHref(entry)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-body text-base text-white transition-opacity hover:opacity-70"
+                >
+                  {entry.handle}
+                </a>
               ))}
-            </a>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Static cutout collage, positioned exactly as in the Figma comp and
-          scaled proportionally with the viewport. */}
-      <div
+      {/* Full bleed: the collage runs edge to edge while the text above it
+          keeps the page padding. Flattened to a single image by
+          scripts/build-collage.mjs. */}
+      <Image
         aria-hidden
-        className="pointer-events-none relative mt-10 w-full overflow-hidden"
-        style={{ aspectRatio: `${collageFrame.width} / ${collageFrame.height}` }}
-      >
-        {collagePieces.map((piece) => (
-          <div
-            key={piece.id}
-            className="absolute opacity-90"
-            style={{
-              left: `${(piece.left / collageFrame.width) * 100}%`,
-              top: `${(piece.top / collageFrame.height) * 100}%`,
-              width: `${(piece.width / collageFrame.width) * 100}%`,
-              height: `${(piece.height / collageFrame.height) * 100}%`,
-              transform: piece.mirrored
-                ? "scaleX(-1)"
-                : piece.upsideDown
-                  ? "rotate(180deg)"
-                  : undefined,
-            }}
-          >
-            <Image
-              src={piece.src}
-              alt=""
-              fill
-              sizes="(min-width: 1440px) 30vw, 40vw"
-              className="object-cover"
-              style={{ objectPosition: piece.objectPosition }}
-            />
-          </div>
-        ))}
-      </div>
+        src="/images/gallery/collage.png"
+        alt=""
+        width={2880}
+        height={806}
+        sizes="100vw"
+        className="pointer-events-none mt-10 h-auto w-full select-none opacity-90"
+      />
     </section>
   );
 }
