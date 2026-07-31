@@ -19,11 +19,22 @@ export const contact = {
   socials: [
     { label: "Instagram", handles: [{ handle: "@koiavalera" }] },
     { label: "Photography", handles: [{ handle: "@koiava_photography" }] },
+    { label: "Artlab Art Studio", handles: [{ handle: "@artlab_kr" }] },
+    {
+      label: "Buy Artwork",
+      handles: [
+        {
+          handle: "Saatchi Art",
+          href: "https://www.saatchiart.com/account/profile/2604565",
+        },
+      ],
+    },
+    // Last, since it is the only entry with two handles — keeping the
+    // taller column at the end leaves the row even.
     {
       label: "Jewelry",
       handles: [{ handle: "@koiava_jewelry" }, { handle: "@harni_zgardy" }],
     },
-    { label: "Artlab Art Studio", handles: [{ handle: "@artlab_kr" }] },
   ] satisfies { label: string; handles: SocialHandle[] }[],
 };
 
