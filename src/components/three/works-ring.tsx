@@ -12,6 +12,7 @@ import {
   learnMoreTexture,
 } from "@/components/three/caption-texture";
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
+import { openWork } from "@/lib/work-overlay";
 import {
   ringConfig,
   ringSetSize,
@@ -83,6 +84,7 @@ function WorkPlane({
   total,
   title,
   info,
+  slug,
 }: {
   src: string;
   aspect: number;
@@ -90,6 +92,7 @@ function WorkPlane({
   total: number;
   title: string;
   info: string;
+  slug: string;
 }) {
   const groupRef = useRef<THREE.Group>(null!);
   const meshRef = useRef<THREE.Mesh>(null!);
@@ -272,6 +275,12 @@ function WorkPlane({
           hovered.current = false;
           document.body.style.cursor = "";
         }}
+        onClick={(event) => {
+          event.stopPropagation();
+          hovered.current = false;
+          document.body.style.cursor = "";
+          openWork(slug);
+        }}
       >
         <planeGeometry args={[1, 1]} />
         <meshBasicMaterial
@@ -353,6 +362,7 @@ function Ring() {
           total={slots.length}
           title={work.title ?? ""}
           info={workCaption(work)}
+          slug={work.slug}
         />
       ))}
     </group>

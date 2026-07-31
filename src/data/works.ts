@@ -3,6 +3,8 @@
 
 export type Work = {
   id: string;
+  /** URL-safe identifier, used as `?work=<slug>`. */
+  slug: string;
   src: string;
   width: number;
   height: number;
@@ -37,13 +39,21 @@ export const works: Work[] = [
   { id: "w07", src: "/images/works/work-07.png", width: 812, height: 1096 },
   { id: "w08", src: "/images/works/work-08.png", width: 800, height: 1080 },
   { id: "w09", src: "/images/works/work-09.png", width: 476, height: 970 },
-].map((work, i) => ({
-  ...work,
-  title: `Untitled ${ROMAN[i]}`,
-  medium: PLACEHOLDER_MEDIUM,
-  dimensions: PLACEHOLDER_SIZE,
-  description: PLACEHOLDER_DESCRIPTION,
-}));
+].map((work, i) => {
+  const title = `Untitled ${ROMAN[i]}`;
+  return {
+    ...work,
+    title,
+    slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+    medium: PLACEHOLDER_MEDIUM,
+    dimensions: PLACEHOLDER_SIZE,
+    description: PLACEHOLDER_DESCRIPTION,
+  };
+});
+
+export function findWork(slug: string | null) {
+  return slug ? (works.find((work) => work.slug === slug) ?? null) : null;
+}
 
 /** The line "Oil on Canvas • 31.5 x 31.5 in", or empty if neither is set. */
 export function workCaption({ medium, dimensions }: Work) {
