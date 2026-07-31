@@ -117,7 +117,7 @@ export function WorkDetail() {
         ref={closeRef}
         type="button"
         onClick={closeWork}
-        className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 font-body text-sm text-ink transition-colors hover:bg-neutral-100 sm:left-8 sm:top-8"
+        className="absolute left-2 top-2 z-10 flex items-center gap-2 rounded-full p-2 font-body text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 sm:left-6 sm:top-6"
       >
         <svg
           width="16"
