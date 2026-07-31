@@ -5,7 +5,12 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { buildRingSlots, workCaption } from "@/data/works";
-import { CAPTION_ASPECT, captionTexture } from "@/components/three/caption-texture";
+import {
+  BUTTON_ASPECT,
+  LABEL_ASPECT,
+  cardLabelTexture,
+  learnMoreTexture,
+} from "@/components/three/caption-texture";
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import {
   ringConfig,
@@ -17,8 +22,19 @@ import {
 
 const textureLoader = new THREE.TextureLoader();
 
-/** Matches --color-muted, the secondary text colour used across the site. */
-const CAPTION_COLOR = "#737373";
+/** Match the site's ink and secondary text colours. */
+const TITLE_COLOR = "#000000";
+const INFO_COLOR = "#737373";
+
+/**
+ * Touch devices get the Learn more button permanently, since there is no
+ * hover to reveal it with.
+ */
+function supportsHover() {
+  return typeof window !== "undefined"
+    ? window.matchMedia("(hover: hover)").matches
+    : true;
+}
 
 /** Smoothed pointer, in normalised [-1, 1] screen coordinates. */
 const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 };
@@ -65,22 +81,31 @@ function WorkPlane({
   aspect,
   index,
   total,
-  caption,
+  title,
+  info,
 }: {
   src: string;
   aspect: number;
   index: number;
   total: number;
-  caption: string;
+  title: string;
+  info: string;
 }) {
   const groupRef = useRef<THREE.Group>(null!);
   const meshRef = useRef<THREE.Mesh>(null!);
   const materialRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const captionRef = useRef<THREE.Mesh>(null);
-  const captionMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const labelRef = useRef<THREE.Mesh>(null);
+  const labelMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const buttonRef = useRef<THREE.Mesh>(null);
+  const buttonMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const hovered = useRef(false);
   const hoverEase = useRef(0);
+  const hoverCapable = useRef(true);
   const { size } = useThree();
+
+  useEffect(() => {
+    hoverCapable.current = supportsHover();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,24 +223,39 @@ function WorkPlane({
     material.opacity = opacity;
     mesh.visible = opacity > 0.01;
 
-    // Captions belong to the resolved line, so they arrive only once the
-    // band has flattened out — there is no room for them on the cylinder.
-    const caption = captionRef.current;
-    const captionMaterial = captionMaterialRef.current;
-    if (caption && captionMaterial) {
-      const captionW = cardW / hoverScale;
-      const captionH = captionW * CAPTION_ASPECT;
-      caption.scale.set(captionW, captionH, 1);
-      caption.position.set(
-        0,
-        -cardH / 2 - captionH * 0.75,
-        0.1, // just in front, so it never z-fights the artwork
-      );
-      caption.renderOrder = Math.round(z) + 1;
+    // Labels belong to the resolved line, so they arrive only once the band
+    // has flattened out — there is no room for them on the cylinder.
+    const reveal = THREE.MathUtils.smoothstep(e, 0.82, 1);
+    // Hold the label steady while the artwork grows under the cursor.
+    const labelW = cardW / hoverScale;
+    const labelH = labelW * LABEL_ASPECT;
+    const labelY = -cardH / 2 - labelH * 0.55;
 
-      const reveal = THREE.MathUtils.smoothstep(e, 0.82, 1);
-      captionMaterial.opacity = opacity * reveal;
-      caption.visible = captionMaterial.opacity > 0.01;
+    const label = labelRef.current;
+    const labelMaterial = labelMaterialRef.current;
+    if (label && labelMaterial) {
+      label.scale.set(labelW, labelH, 1);
+      // Just in front, so it never z-fights the artwork.
+      label.position.set(0, labelY, 0.1);
+      label.renderOrder = Math.round(z) + 1;
+      labelMaterial.opacity = opacity * reveal;
+      label.visible = labelMaterial.opacity > 0.01;
+    }
+
+    const button = buttonRef.current;
+    const buttonMaterial = buttonMaterialRef.current;
+    if (button && buttonMaterial) {
+      const buttonW = labelW * 0.52;
+      const buttonH = buttonW * BUTTON_ASPECT;
+      button.scale.set(buttonW, buttonH, 1);
+      button.position.set(0, labelY - labelH / 2 - buttonH * 0.7, 0.1);
+      button.renderOrder = Math.round(z) + 1;
+
+      // Revealed by hover where there is a pointer, always shown where
+      // there is not.
+      const show = hoverCapable.current ? hoverEase.current : 1;
+      buttonMaterial.opacity = opacity * reveal * show;
+      button.visible = buttonMaterial.opacity > 0.01;
     }
   });
 
@@ -244,12 +284,12 @@ function WorkPlane({
         />
       </mesh>
 
-      {caption && (
-        <mesh ref={captionRef} raycast={() => null}>
+      {(title || info) && (
+        <mesh ref={labelRef} raycast={() => null}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial
-            ref={captionMaterialRef}
-            map={captionTexture(caption, CAPTION_COLOR)}
+            ref={labelMaterialRef}
+            map={cardLabelTexture(title, info, TITLE_COLOR, INFO_COLOR)}
             transparent
             opacity={0}
             depthWrite={false}
@@ -257,6 +297,20 @@ function WorkPlane({
           />
         </mesh>
       )}
+
+      {/* The artwork behind is the hit area, so the pill itself ignores
+          the raycast and never steals the hover it is reacting to. */}
+      <mesh ref={buttonRef} raycast={() => null}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial
+          ref={buttonMaterialRef}
+          map={learnMoreTexture(TITLE_COLOR)}
+          transparent
+          opacity={0}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
     </group>
   );
 }
@@ -297,7 +351,8 @@ function Ring() {
           aspect={work.width / work.height}
           index={index}
           total={slots.length}
-          caption={workCaption(work)}
+          title={work.title ?? ""}
+          info={workCaption(work)}
         />
       ))}
     </group>

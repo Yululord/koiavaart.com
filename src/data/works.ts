@@ -9,16 +9,23 @@ export type Work = {
   title?: string;
   medium?: string;
   dimensions?: string;
+  description?: string;
 };
 
 /**
- * PLACEHOLDER medium and dimensions — every entry currently carries the one
- * example from the Figma file. They are deliberately identical so it is
- * obvious at a glance that they are not real; replace per painting. A work
- * with neither field simply shows no caption.
+ * PLACEHOLDER copy. Titles read "Untitled" because we genuinely do not know
+ * them yet; medium, size and description are the one example from the Figma
+ * file, identical across every painting so they cannot be taken for real
+ * data. Replace per work — a field left unset simply is not shown.
  */
 const PLACEHOLDER_MEDIUM = "Oil on Canvas";
 const PLACEHOLDER_SIZE = "31.5 x 31.5 in";
+const PLACEHOLDER_DESCRIPTION =
+  "Built slowly, in layers, until the image feels alive rather than finished. " +
+  "The painting holds still something that usually passes too quickly — a gaze, " +
+  "a bloom, a quiet distance between two people.";
+
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
 
 export const works: Work[] = [
   { id: "w01", src: "/images/works/work-01.png", width: 1080, height: 1350 },
@@ -30,10 +37,12 @@ export const works: Work[] = [
   { id: "w07", src: "/images/works/work-07.png", width: 812, height: 1096 },
   { id: "w08", src: "/images/works/work-08.png", width: 800, height: 1080 },
   { id: "w09", src: "/images/works/work-09.png", width: 476, height: 970 },
-].map((work) => ({
+].map((work, i) => ({
   ...work,
+  title: `Untitled ${ROMAN[i]}`,
   medium: PLACEHOLDER_MEDIUM,
   dimensions: PLACEHOLDER_SIZE,
+  description: PLACEHOLDER_DESCRIPTION,
 }));
 
 /** The line "Oil on Canvas • 31.5 x 31.5 in", or empty if neither is set. */
