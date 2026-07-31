@@ -248,11 +248,13 @@ function WorkPlane({
     const button = buttonRef.current;
     const buttonMaterial = buttonMaterialRef.current;
     if (button && buttonMaterial) {
+      // Centred over the artwork rather than below it. Sized from the
+      // unscaled width so it stays put while the card zooms under it.
       const buttonW = labelW * 0.52;
       const buttonH = buttonW * BUTTON_ASPECT;
       button.scale.set(buttonW, buttonH, 1);
-      button.position.set(0, labelY - labelH / 2 - buttonH * 0.7, 0.1);
-      button.renderOrder = Math.round(z) + 1;
+      button.position.set(0, 0, 0.1);
+      button.renderOrder = Math.round(z) + 2;
 
       // Revealed by hover where there is a pointer, always shown where
       // there is not.

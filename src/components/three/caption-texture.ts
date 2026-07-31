@@ -101,9 +101,11 @@ export function cardLabelTexture(
 
 function paintButton(ctx: CanvasRenderingContext2D, color: string) {
   ctx.clearRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
-  const r = BUTTON_HEIGHT / 2;
   const inset = 3;
+  const r = (BUTTON_HEIGHT - inset * 2) / 2;
 
+  // Solid white: the pill sits over the artwork itself, so it has to hold
+  // up against a dark painting as readily as a pale one.
   ctx.beginPath();
   ctx.roundRect(
     inset,
@@ -112,8 +114,10 @@ function paintButton(ctx: CanvasRenderingContext2D, color: string) {
     BUTTON_HEIGHT - inset * 2,
     r,
   );
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.12)";
+  ctx.lineWidth = 2;
   ctx.stroke();
 
   ctx.font = `500 ${BUTTON_TEXT}px ${fontStack()}`;

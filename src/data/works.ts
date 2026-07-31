@@ -12,7 +12,14 @@ export type Work = {
   medium?: string;
   dimensions?: string;
   description?: string;
+  price?: string;
+  /** Saatchi listing for this painting. Falls back to the artist profile. */
+  buyUrl?: string;
 };
+
+/** Where Buy points until each painting has its own listing URL. */
+export const SAATCHI_PROFILE =
+  "https://www.saatchiart.com/account/profile/2604565";
 
 /**
  * PLACEHOLDER copy. Titles read "Untitled" because we genuinely do not know
@@ -22,6 +29,12 @@ export type Work = {
  */
 const PLACEHOLDER_MEDIUM = "Oil on Canvas";
 const PLACEHOLDER_SIZE = "31.5 x 31.5 in";
+/**
+ * PLACEHOLDER price — identical on every painting on purpose, so it cannot
+ * be mistaken for a real figure. Prices are commercially sensitive: set
+ * these per work from the artist before this goes anywhere public.
+ */
+const PLACEHOLDER_PRICE = "$1,200";
 const PLACEHOLDER_DESCRIPTION =
   "Built slowly, in layers, until the image feels alive rather than finished. " +
   "The painting holds still something that usually passes too quickly — a gaze, " +
@@ -48,8 +61,14 @@ export const works: Work[] = [
     medium: PLACEHOLDER_MEDIUM,
     dimensions: PLACEHOLDER_SIZE,
     description: PLACEHOLDER_DESCRIPTION,
+    price: PLACEHOLDER_PRICE,
   };
 });
+
+/** A painting's own listing once it has one, the profile until then. */
+export function buyLink(work: Work) {
+  return work.buyUrl ?? SAATCHI_PROFILE;
+}
 
 export function findWork(slug: string | null) {
   return slug ? (works.find((work) => work.slug === slug) ?? null) : null;

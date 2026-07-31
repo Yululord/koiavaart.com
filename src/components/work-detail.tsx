@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useLenis } from "lenis/react";
-import { findWork, workCaption, works } from "@/data/works";
+import { buyLink, findWork, workCaption, works } from "@/data/works";
 import {
   closeWork,
   openWorkServerSnapshot,
@@ -111,8 +111,29 @@ export function WorkDetail() {
       aria-label={work.title}
       className="fixed inset-0 z-[60] overflow-y-auto bg-white"
     >
+      {/* Two ways out, because a lone icon in the corner was not reading as
+          one: a worded trail on the left, the expected × on the right. */}
       <button
         ref={closeRef}
+        type="button"
+        onClick={closeWork}
+        className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 font-body text-sm text-ink transition-colors hover:bg-neutral-100 sm:left-8 sm:top-8"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden
+        >
+          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Back to works
+      </button>
+
+      <button
         type="button"
         onClick={closeWork}
         aria-label="Close"
@@ -160,7 +181,24 @@ export function WorkDetail() {
               {work.description}
             </p>
           )}
-          <p className="font-body text-xs text-muted">
+
+          {work.price && (
+            <div className="mt-2 flex items-center gap-4">
+              <span className="font-display text-2xl leading-none text-ink">
+                {work.price}
+              </span>
+              <a
+                href={buyLink(work)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 font-body text-base text-white transition-opacity hover:opacity-80"
+              >
+                Buy
+              </a>
+            </div>
+          )}
+
+          <p className="mt-2 font-body text-xs text-muted">
             {index + 1} / {works.length}
           </p>
         </div>
