@@ -116,7 +116,11 @@ export const ringConfig: RingConfig = {
   hoverScale: 1.18,
 };
 
-/** Ranges for the dev panel: [min, max, step]. */
+/**
+ * Ranges for the tuning panel: [min, max, step]. The panel itself is
+ * currently removed — these, `setRingConfig` and `ringSpacingActual` are
+ * kept so it can be dropped back in without rebuilding the plumbing.
+ */
 export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]> = {
   radiusFactor: [0.15, 1.2, 0.01],
   copies: [1, 6, 1],

@@ -140,15 +140,19 @@ Also on tap: radius, vertical position, tilt on two axes, per-card roll,
 height/size scatter, depth fade, idle speed, scroll travel, pointer parallax,
 unwrap timing, field of view and hover zoom.
 
-Append **`?tune`** to any URL to open a live panel of sliders (works locally
-and on a deployed preview; it is hidden without the flag). Adjust until it
-looks right, hit **Copy config**, and paste over the defaults in
-`src/config/ring.ts` to make it permanent.
+Edit the values in `src/config/ring.ts` directly. The render loop reads that
+object every frame, so `ringConfig.radiusFactor = 0.8` in the console applies
+immediately if you want to feel a change before committing to it.
 
-`?p=<0–1>` pins the scroll sequence at a given point, which pairs well with
-`?tune` for dialling in a specific moment — e.g. `?tune&p=0.2` for mid-unwrap.
-`?o=<px>` pins how far the band has scrolled away past the end of the runway,
-so `?p=1&o=300` shows the hand-off into the About section.
+There was a slider panel behind `?tune`; it has been removed, but the
+plumbing it needed (`ringConfigRanges`, `setRingConfig`, `ringSpacingActual`)
+is still in place, so it can be restored from git history without rebuilding
+anything.
+
+`?p=<0–1>` pins the scroll sequence at a given point — e.g. `?p=0.2` for
+mid-unwrap, `?p=0.6` for the resolved line. `?o=<px>` pins how far the band
+has scrolled away past the end of the runway, so `?p=1&o=300` shows the
+hand-off into the About section.
 
 ### Handing off to the next section
 Once the strip has travelled through every work there is nothing left for the
