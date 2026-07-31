@@ -11,27 +11,16 @@ export type RingConfig = {
   /** Cylinder radius as a fraction of viewport width. Bigger = flatter arc. */
   radiusFactor: number;
   /**
-   * Distance between card centres around the cylinder, as a fraction of
-   * viewport width. This sets how many cards it takes to close the circle,
-   * so it steps in whole cards — the panel reports the count and the exact
-   * spacing it settles on. Works repeat to fill whatever it needs.
+   * How many times the set of works is laid around the cylinder, in order:
+   * 1, 2, 3 … 9, 1, 2, 3 … 9. Cloning the whole set keeps every copy of a
+   * painting the maximum distance from its twin — half the ring at two
+   * copies — so repeats never read as a mistake. The card count is
+   * therefore always a whole number of sets, which is also what lets the
+   * ring close seamlessly.
    */
-  ringSpacing: number;
+  copies: number;
   /** Card width on the cylinder, as a fraction of viewport width. */
   cardWidthRing: number;
-  /**
-   * Extra cards packed between the ones that survive into the line, to fill
-   * the cylinder out. 1 keeps only the survivors; 2 puts one extra card in
-   * every gap, and so on. These extras exist for the coiled ring alone and
-   * retire before it opens.
-   */
-  repeats: number;
-  /**
-   * Progress by which the extra cards have gone. Kept well before the
-   * cylinder has opened, so they thin out while it is still a ring rather
-   * than blinking out mid-unwrap.
-   */
-  duplicateFadeEnd: number;
 
   // ---- Line -------------------------------------------------------------
   /**
@@ -95,10 +84,8 @@ export type RingConfig = {
 
 export const ringConfig: RingConfig = {
   radiusFactor: 0.68,
-  ringSpacing: 0.306,
+  copies: 3,
   cardWidthRing: 0.092,
-  repeats: 2,
-  duplicateFadeEnd: 0.12,
 
   lineSpacing: 0.302,
   cardWidthLine: 0.206,
@@ -132,10 +119,8 @@ export const ringConfig: RingConfig = {
 /** Ranges for the dev panel: [min, max, step]. */
 export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]> = {
   radiusFactor: [0.15, 1.2, 0.01],
-  ringSpacing: [0.06, 0.9, 0.002],
+  copies: [1, 6, 1],
   cardWidthRing: [0.03, 0.6, 0.002],
-  repeats: [1, 4, 1],
-  duplicateFadeEnd: [0.02, 0.4, 0.01],
 
   lineSpacing: [0.06, 1.2, 0.002],
   cardWidthLine: [0.03, 0.8, 0.002],
@@ -166,36 +151,29 @@ import { works as workList } from "@/data/works";
 
 const workCount = workList.length;
 
-/**
- * How many cards it takes to close the cylinder at the current radius and
- * spacing. A ring only looks seamless if its cards divide the circumference
- * exactly, so the count is a whole number and the spacing slider therefore
- * steps rather than glides. `ringSpacingActual` reports where it landed.
- *
- * Both inputs are fractions of viewport width, so width cancels and the
- * count is resolution-independent.
- */
-export function ringSlotCount() {
-  const ideal = (2 * Math.PI * ringConfig.radiusFactor) / ringConfig.ringSpacing;
-  return Math.max(3, Math.round(ideal));
+/** Number of works — one full pass through the set. */
+export const ringSetSize = workCount;
+
+/** How many complete sets go around the ring. */
+export function ringCopies() {
+  return Math.max(1, Math.round(ringConfig.copies));
 }
 
-/** Every card on the ring, including the extras that fill it out. */
+/**
+ * Every card on the ring. Always a whole number of sets, which is what
+ * keeps the clones evenly spread and lets the circle close seamlessly.
+ */
 export function ringTotalCount() {
-  return ringSlotCount() * Math.max(1, Math.round(ringConfig.repeats));
+  return workCount * ringCopies();
 }
 
 /**
- * Cards that survive into the line — one per work, so the strip can never
- * repeat a painting however the cylinder is tuned.
+ * Gap between neighbouring cards, as a fraction of viewport width. Derived
+ * rather than set: the cards have to divide the circumference exactly, so
+ * radius and copies between them decide it.
  */
-export function ringKeptCount() {
-  return Math.min(workCount, ringTotalCount());
-}
-
-/** The spacing the ring actually settles on, once quantised to whole cards. */
 export function ringSpacingActual() {
-  return (2 * Math.PI * ringConfig.radiusFactor) / ringSlotCount();
+  return (2 * Math.PI * ringConfig.radiusFactor) / ringTotalCount();
 }
 
 const listeners = new Set<() => void>();

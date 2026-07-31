@@ -117,12 +117,17 @@ vertical position are separate controls, and the coiled cylinder and the
 unrolled line each get their own set — so the ring can sit low, tight and
 small while the line sits centred, wide and large.
 
-**Fill cards ×** packs extra cards between the ones that survive into the
-line, to make the cylinder look full without those extras ever reaching the
-strip. They fade out early (**Fill cards gone by**, default progress 0.12),
-while the ring is still a ring — deliberately well before the unwrap, so the
-unwrap itself plays out on a set that is no longer changing. Survivors sit at
-a fixed stride so that removing the extras leaves them evenly spaced.
+**Copies of the set** wraps the works around the cylinder more than once to
+fill it out: 1…9, 1…9, in order. Cloning the whole set in sequence keeps each
+copy of a painting the maximum distance from its twin — half the ring at two
+copies — so repeats never read as a mistake, and nothing has to fade out on
+the way into the line. The card count is therefore always a whole number of
+sets, which is also what lets the ring close seamlessly; the gap that falls
+out of radius and copies is reported in the panel.
+
+Motion is measured in *passes through the set of works*, not laps of the whole
+band, so `idleSpeed`, `stripTravel` and `pointerPush` keep their meaning when
+the copy count changes.
 
 One asymmetry worth knowing: a cylinder only looks seamless if its cards
 divide the circumference exactly, so the ring's card count is a whole number

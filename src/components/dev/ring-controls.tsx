@@ -4,7 +4,8 @@ import { useState, useSyncExternalStore } from "react";
 import {
   ringConfig,
   ringConfigRanges,
-  ringKeptCount,
+  ringCopies,
+  ringSetSize,
   ringSpacingActual,
   ringTotalCount,
   setRingConfig,
@@ -16,14 +17,7 @@ type Group = { label: string; keys: (keyof RingConfig)[] };
 const GROUPS: Group[] = [
   {
     label: "Cylinder",
-    keys: [
-      "radiusFactor",
-      "ringSpacing",
-      "cardWidthRing",
-      "verticalOffset",
-      "repeats",
-      "duplicateFadeEnd",
-    ],
+    keys: ["radiusFactor", "copies", "cardWidthRing", "verticalOffset"],
   },
   {
     label: "Line",
@@ -57,11 +51,9 @@ const GROUPS: Group[] = [
 
 const LABELS: Partial<Record<keyof RingConfig, string>> = {
   radiusFactor: "Radius",
-  ringSpacing: "Gap between cards",
+  copies: "Copies of the set",
   cardWidthRing: "Card width",
   verticalOffset: "Vertical position",
-  repeats: "Fill cards ×",
-  duplicateFadeEnd: "Fill cards gone by",
   lineSpacing: "Gap between cards",
   cardWidthLine: "Card width",
   verticalOffsetLine: "Vertical position",
@@ -140,7 +132,7 @@ export function RingControls() {
         <div className="flex justify-between">
           <span className="text-white/60">Cards on ring</span>
           <span>
-            {ringTotalCount()} ({ringKeptCount()} kept)
+            {ringTotalCount()} ({ringCopies()} × {ringSetSize})
           </span>
         </div>
         <div className="flex justify-between">

@@ -4,16 +4,21 @@ import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { buildRingSlots } from "@/data/works";
+import { buildRingSlots, workCaption } from "@/data/works";
+import { CAPTION_ASPECT, captionTexture } from "@/components/three/caption-texture";
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import {
   ringConfig,
+  ringSetSize,
   ringTotalCount,
   signedJitter,
   subscribeRingConfig,
 } from "@/config/ring";
 
 const textureLoader = new THREE.TextureLoader();
+
+/** Matches --color-muted, the secondary text colour used across the site. */
+const CAPTION_COLOR = "#737373";
 
 /** Smoothed pointer, in normalised [-1, 1] screen coordinates. */
 const pointer = { targetX: 0, targetY: 0, x: 0, y: 0 };
@@ -60,20 +65,19 @@ function WorkPlane({
   aspect,
   index,
   total,
-  lineIndex,
-  keptCount,
-  isPrimary,
+  caption,
 }: {
   src: string;
   aspect: number;
   index: number;
   total: number;
-  lineIndex: number;
-  keptCount: number;
-  isPrimary: boolean;
+  caption: string;
 }) {
+  const groupRef = useRef<THREE.Group>(null!);
   const meshRef = useRef<THREE.Mesh>(null!);
   const materialRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const captionRef = useRef<THREE.Mesh>(null);
+  const captionMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const hovered = useRef(false);
   const hoverEase = useRef(0);
   const { size } = useThree();
@@ -98,9 +102,10 @@ function WorkPlane({
   }, []);
 
   useFrame((_, delta) => {
+    const group = groupRef.current;
     const mesh = meshRef.current;
     const material = materialRef.current;
-    if (!mesh || !material) return;
+    if (!group || !mesh || !material) return;
 
     const cfg = ringConfig;
     const p = ringScrollProgress();
@@ -111,30 +116,33 @@ function WorkPlane({
     const radius = vw * cfg.radiusFactor;
 
     // Ring spacing is pinned to whatever divides the circumference exactly,
-    // so the cylinder always closes. The line spaces the *survivors* by
-    // lineSpacing; the extras land between them and have faded by then.
-    const ringSpacing = (2 * Math.PI * radius) / total;
-    const lineSpacing = vw * cfg.lineSpacing;
-    const ringPos = (index - (total - 1) / 2) * ringSpacing;
-    const linePos = (lineIndex - (keptCount - 1) / 2) * lineSpacing;
-
-    const period = THREE.MathUtils.lerp(
-      2 * Math.PI * radius,
-      keptCount * lineSpacing,
+    // so the cylinder always closes; the line uses its own. Every card is
+    // carried through — nothing is dropped on the way.
+    const spacing = THREE.MathUtils.lerp(
+      (2 * Math.PI * radius) / total,
+      vw * cfg.lineSpacing,
       e,
     );
+    const period = spacing * total;
+
+    // Motion is measured in passes through the set of works rather than
+    // laps of the whole band, so the speed controls keep their meaning
+    // however many copies are wrapped around the ring.
+    const perPass = spacing * ringSetSize;
 
     // Arc-length position of this card along the band. Idle drift, scroll
     // and pointer parallax are all shifts along the arc, so cards always
     // travel in the direction of rotation.
-    const idle = (performance.now() / 1000) * cfg.idleSpeed * period;
+    const idle = (performance.now() / 1000) * cfg.idleSpeed * perPass;
     const scrolled =
       (Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd)) *
-      period *
+      perPass *
       cfg.stripTravel;
-    const nudge = pointer.x * period * cfg.pointerPush;
+    // Parallax belongs to the cylinder only: once the band is a flat row of
+    // clickable artworks, having it drift under the cursor works against you.
+    const nudge = pointer.x * perPass * cfg.pointerPush * (1 - e);
     const s = wrapSigned(
-      THREE.MathUtils.lerp(ringPos, linePos, e) + idle + scrolled + nudge,
+      (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
       period,
     );
 
@@ -170,21 +178,17 @@ function WorkPlane({
       vh * THREE.MathUtils.lerp(cfg.verticalOffset, cfg.verticalOffsetLine, e) +
       signedJitter(index, 2) * cfg.heightJitter * vh * jitter;
 
-    mesh.position.set(x, y, z);
+    // The group carries placement; the meshes keep their own scales, so the
+    // caption is not stretched by the artwork's aspect.
+    group.position.set(x, y, z);
+    group.rotation.set(0, phi, signedJitter(index, 3) * cfg.cardRoll * jitter);
     mesh.scale.set(cardW, cardH, 1);
-    mesh.rotation.set(0, phi, signedJitter(index, 3) * cfg.cardRoll * jitter);
     // Nearer cards draw last so they sit on top of the hazy far side.
     mesh.renderOrder = Math.round(z);
 
     // Near edge of the ring sits at z = 0, far side at z = -2r.
     const depth = THREE.MathUtils.clamp((z + 2 * radius) / (2 * radius), 0, 1);
     let opacity = THREE.MathUtils.lerp(cfg.depthFade, 1, depth);
-
-    // Filler cards bow out early, while the cylinder is still a cylinder,
-    // so the unwrap itself plays out on a set that is no longer changing.
-    if (!isPrimary) {
-      opacity *= 1 - THREE.MathUtils.smoothstep(p, 0, cfg.duplicateFadeEnd);
-    }
 
     // At 1 the strip never fades — it scrolls away bodily instead, which is
     // the default. Lower it to dissolve the band before the runway ends.
@@ -193,31 +197,67 @@ function WorkPlane({
     }
     material.opacity = opacity;
     mesh.visible = opacity > 0.01;
+
+    // Captions belong to the resolved line, so they arrive only once the
+    // band has flattened out — there is no room for them on the cylinder.
+    const caption = captionRef.current;
+    const captionMaterial = captionMaterialRef.current;
+    if (caption && captionMaterial) {
+      const captionW = cardW / hoverScale;
+      const captionH = captionW * CAPTION_ASPECT;
+      caption.scale.set(captionW, captionH, 1);
+      caption.position.set(
+        0,
+        -cardH / 2 - captionH * 0.75,
+        0.1, // just in front, so it never z-fights the artwork
+      );
+      caption.renderOrder = Math.round(z) + 1;
+
+      const reveal = THREE.MathUtils.smoothstep(e, 0.82, 1);
+      captionMaterial.opacity = opacity * reveal;
+      caption.visible = captionMaterial.opacity > 0.01;
+    }
   });
 
   return (
-    <mesh
-      ref={meshRef}
-      onPointerOver={(event) => {
-        event.stopPropagation();
-        hovered.current = true;
-        document.body.style.cursor = "pointer";
-      }}
-      onPointerOut={() => {
-        hovered.current = false;
-        document.body.style.cursor = "";
-      }}
-    >
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial
-        ref={materialRef}
-        transparent
-        opacity={0}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </mesh>
+    <group ref={groupRef}>
+      <mesh
+        ref={meshRef}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          hovered.current = true;
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          hovered.current = false;
+          document.body.style.cursor = "";
+        }}
+      >
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial
+          ref={materialRef}
+          transparent
+          opacity={0}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {caption && (
+        <mesh ref={captionRef} raycast={() => null}>
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial
+            ref={captionMaterialRef}
+            map={captionTexture(caption, CAPTION_COLOR)}
+            transparent
+            opacity={0}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
+    </group>
   );
 }
 
@@ -257,9 +297,7 @@ function Ring() {
           aspect={work.width / work.height}
           index={index}
           total={slots.length}
-          lineIndex={work.lineIndex}
-          keptCount={work.keptCount}
-          isPrimary={work.isPrimary}
+          caption={workCaption(work)}
         />
       ))}
     </group>
