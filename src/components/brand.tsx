@@ -24,10 +24,10 @@ const MOBILE = {
 
 /**
  * Mobile pins the text block to the top so the artwork gets the rest of the
- * frame: 16px in from the top and sides, and 16px between the three rows.
+ * frame: 16px in from the top and sides, and 24px between the three rows.
  */
 const MOBILE_INSET = 16;
-const MOBILE_GAP = 16;
+const MOBILE_GAP = 24;
 /** Line box of the tagline and categories rows at their hero size (16px). */
 const CAPTION_LINE = 24;
 const MOBILE_TITLE_TOP = MOBILE_INSET + CAPTION_LINE + MOBILE_GAP;
@@ -125,7 +125,7 @@ export function Brand() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
       {/* pt matches MOBILE_TITLE_TOP / the desktop padTop above. */}
-      <div className="px-4 pt-[56px] md:px-10 md:pt-8">
+      <div className="px-4 pt-[64px] md:px-10 md:pt-8">
         {/* Stacked and centred on mobile, one line from `md` up. Measuring
             scrollWidth gives the widest line either way. */}
         <h1
