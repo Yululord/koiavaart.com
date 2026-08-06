@@ -6,12 +6,11 @@ import { site } from "@/data/site";
  */
 export function SiteFooter() {
   return (
-    <footer className="relative z-20 flex h-24 items-center justify-between bg-white px-6 sm:px-10">
-      {/* Desktop only: on a phone the pinned Contact button sits right over
-          this row, and the copyright ends up behind it. */}
-      <p className="hidden font-body text-sm text-muted md:block">
-        {site.copyright}
-      </p>
+    // Nothing left in this row on a phone — the copyright sat behind the
+    // pinned Contact button — so it collapses away and the collage runs to
+    // the bottom of the page rather than trailing a blank white band.
+    <footer className="relative z-20 hidden h-24 items-center justify-between bg-white px-6 sm:px-10 md:flex">
+      <p className="font-body text-sm text-muted">{site.copyright}</p>
       <p className="hidden font-body text-sm text-muted md:block">
         {site.categories.join(" · ")}
       </p>

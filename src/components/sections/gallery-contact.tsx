@@ -46,8 +46,18 @@ export function GalleryContact() {
       </div>
 
       {/* Full bleed: the collage runs edge to edge while the text above it
-          keeps the page padding. Flattened to a single image by
-          scripts/build-collage.mjs. */}
+          keeps the page padding. The desktop one is flattened by
+          scripts/build-collage.mjs; mobile has its own, cut to four pieces,
+          because the twelve-piece version shrinks to a thin band on a phone. */}
+      <Image
+        aria-hidden
+        src="/images/gallery/collage-mobile.png"
+        alt=""
+        width={590}
+        height={437}
+        sizes="100vw"
+        className="pointer-events-none mt-10 h-auto w-full select-none opacity-90 md:hidden"
+      />
       <Image
         aria-hidden
         src="/images/gallery/collage.png"
@@ -55,7 +65,7 @@ export function GalleryContact() {
         width={2880}
         height={806}
         sizes="100vw"
-        className="pointer-events-none mt-10 h-auto w-full select-none opacity-90"
+        className="pointer-events-none mt-10 hidden h-auto w-full select-none opacity-90 md:block"
       />
     </section>
   );
