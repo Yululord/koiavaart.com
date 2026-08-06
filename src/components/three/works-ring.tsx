@@ -204,8 +204,15 @@ function WorkPlane({
     // at the front of the cylinder, the way it does on desktop, rather than
     // jumping to a fixed one. One short of a full lap covers every work
     // exactly once and comes to rest on the ninth.
+    //
+    // The idle turn leaves the band part way between two cards, so a whole
+    // number of steps would land wherever it happened to be — the last card
+    // half out of frame, and differently each visit. Carrying that remainder
+    // into the journey lands it square on a card every time. Idle has stopped
+    // accumulating by the time any of this runs, so it holds still.
+    const drift = wrapSigned(idle, spacing);
     const scrolled = isMobileRing()
-      ? -after * (ringSetSize - 1) * spacing
+      ? -after * ((ringSetSize - 1) * spacing + drift)
       : after * perPass * cfg.stripTravel;
 
     // Parallax belongs to the cylinder only: once the band is a flat row of
