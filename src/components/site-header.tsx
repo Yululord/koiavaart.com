@@ -29,7 +29,9 @@ export function SiteHeader() {
     <div
       ref={barRef}
       style={{ opacity: 0 }}
-      className="pointer-events-none fixed inset-x-0 top-0 z-40 h-16 border-b border-line bg-white"
+      // Desktop only: the mobile design has no header bar, and the wordmark
+      // scrolls away with the hero rather than shrinking into one.
+      className="pointer-events-none fixed inset-x-0 top-0 z-40 hidden h-16 border-b border-line bg-white md:block"
     />
   );
 }

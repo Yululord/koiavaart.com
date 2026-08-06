@@ -82,7 +82,13 @@ export type RingConfig = {
   hoverScale: number;
 };
 
-export const ringConfig: RingConfig = {
+/**
+ * Desktop. Every value here is a fraction of viewport width, which is why a
+ * phone cannot simply reuse it: the same numbers give a ring a third of the
+ * size still carrying the same number of cards, so they pack together and
+ * the repeats become obvious. Mobile gets its own set below.
+ */
+export const desktopRing: RingConfig = {
   radiusFactor: 0.68,
   copies: 3,
   cardWidthRing: 0.092,
@@ -115,6 +121,60 @@ export const ringConfig: RingConfig = {
   fov: 49,
   hoverScale: 1.18,
 };
+
+/**
+ * Mobile — entirely independent of the desktop set above. Editing one never
+ * touches the other.
+ *
+ * A phone gets a single pass through the works rather than three: on a
+ * narrow screen the extra copies read as a jumble rather than density, and
+ * with one copy there is nothing to repeat. The ring is proportionally much
+ * larger and the cards far wider, so only two or three are in view at once
+ * and each is big enough to actually look at. There is no pointer, so the
+ * parallax and hover zoom are off.
+ */
+export const mobileRing: RingConfig = {
+  radiusFactor: 0.9,
+  copies: 1,
+  cardWidthRing: 0.48,
+
+  lineSpacing: 0.68,
+  cardWidthLine: 0.6,
+
+  verticalOffset: -0.02,
+  verticalOffsetLine: 0,
+
+  tiltX: 0.17,
+  tiltZ: 0,
+  cardRoll: 0,
+  heightJitter: 0.06,
+  sizeJitter: 0.14,
+  jitterFlatten: 1,
+  depthFade: 0.17,
+
+  idleSpeed: -0.0111,
+  stripTravel: -1.3,
+  pointerPush: 0,
+  pointerTilt: 0,
+  unwindEnd: 0.42,
+  fadeStart: 1,
+
+  fov: 49,
+  hoverScale: 1,
+};
+
+/** Phones and small tablets take the mobile set; everything else desktop. */
+const MOBILE_QUERY = "(max-width: 767px)";
+let mobileMatches = false;
+
+export function isMobileRing() {
+  return mobileMatches;
+}
+
+/** The set currently in force. Read fresh — the viewport can change. */
+export function activeRing(): RingConfig {
+  return mobileMatches ? mobileRing : desktopRing;
+}
 
 /**
  * Ranges for the tuning panel: [min, max, step]. The panel itself is
@@ -160,7 +220,7 @@ export const ringSetSize = workCount;
 
 /** How many complete sets go around the ring. */
 export function ringCopies() {
-  return Math.max(1, Math.round(ringConfig.copies));
+  return Math.max(1, Math.round(activeRing().copies));
 }
 
 /**
@@ -177,22 +237,48 @@ export function ringTotalCount() {
  * radius and copies between them decide it.
  */
 export function ringSpacingActual() {
-  return (2 * Math.PI * ringConfig.radiusFactor) / ringTotalCount();
+  return (2 * Math.PI * activeRing().radiusFactor) / ringTotalCount();
 }
 
 const listeners = new Set<() => void>();
 
-export function setRingConfig(patch: Partial<RingConfig>) {
-  Object.assign(ringConfig, patch);
+function emit() {
   listeners.forEach((notify) => notify());
+}
+
+/** Patches whichever set is in force, leaving the other untouched. */
+export function setRingConfig(patch: Partial<RingConfig>) {
+  Object.assign(activeRing(), patch);
+  emit();
 }
 
 export function subscribeRingConfig(listener: () => void) {
   listeners.add(listener);
+
+  // Crossing the breakpoint swaps the whole set, and changes the card count
+  // with it, so React has to hear about it as well as the render loop.
+  if (listeners.size === 1 && typeof window !== "undefined") {
+    mobileQuery = window.matchMedia(MOBILE_QUERY);
+    mobileMatches = mobileQuery.matches;
+    onQueryChange = () => {
+      mobileMatches = mobileQuery!.matches;
+      emit();
+    };
+    mobileQuery.addEventListener("change", onQueryChange);
+  }
+
   return () => {
     listeners.delete(listener);
+    if (listeners.size === 0 && mobileQuery && onQueryChange) {
+      mobileQuery.removeEventListener("change", onQueryChange);
+      mobileQuery = null;
+      onQueryChange = null;
+    }
   };
 }
+
+let mobileQuery: MediaQueryList | null = null;
+let onQueryChange: (() => void) | null = null;
 
 /**
  * Stable pseudo-random value in [0, 1) for a given card and channel, so

@@ -14,7 +14,7 @@ import {
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import { openWork } from "@/lib/work-overlay";
 import {
-  ringConfig,
+  activeRing,
   ringSetSize,
   ringTotalCount,
   signedJitter,
@@ -49,7 +49,7 @@ function wrapSigned(value: number, span: number) {
 /** 0 while coiled, 1 once the circle has opened into a straight line. */
 function unwindAmount(p: number) {
   return THREE.MathUtils.smoothstep(
-    THREE.MathUtils.clamp(p / ringConfig.unwindEnd, 0, 1),
+    THREE.MathUtils.clamp(p / activeRing().unwindEnd, 0, 1),
     0,
     1,
   );
@@ -63,7 +63,7 @@ function useConfigValue<T extends number>(read: () => T) {
 /** Frames the camera so one world unit equals one CSS pixel at z = 0. */
 function CameraRig() {
   const { size } = useThree();
-  const fov = useConfigValue(() => ringConfig.fov);
+  const fov = useConfigValue(() => activeRing().fov);
   const distance = size.height / 2 / Math.tan(THREE.MathUtils.degToRad(fov / 2));
 
   return (
@@ -135,7 +135,7 @@ function WorkPlane({
     const material = materialRef.current;
     if (!group || !mesh || !material) return;
 
-    const cfg = ringConfig;
+    const cfg = activeRing();
     const p = ringScrollProgress();
     const e = unwindAmount(p);
     const vw = size.width;
@@ -358,8 +358,8 @@ function Ring() {
 
     // Tilt unwinds to zero so the resolved strip faces the camera square on.
     group.rotation.x =
-      (ringConfig.tiltX + pointer.y * ringConfig.pointerTilt) * (1 - e);
-    group.rotation.z = ringConfig.tiltZ * (1 - e);
+      (activeRing().tiltX + pointer.y * activeRing().pointerTilt) * (1 - e);
+    group.rotation.z = activeRing().tiltZ * (1 - e);
 
     // Past the end of the runway the band stops being pinned and rides the
     // page instead, translating up one-for-one with the scroll. One world

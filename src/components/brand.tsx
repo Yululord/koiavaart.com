@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { site } from "@/data/site";
-import { ringScrollProgress } from "@/lib/scroll-progress";
+import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 
 /** The wordmark is laid out at this size, then transformed to fit. */
 const BASE_FONT = 100;
@@ -28,13 +28,15 @@ function smoothRange(p: number, start: number, end: number) {
 const morph = (p: number) => smoothRange(p, 0.03, 0.3);
 
 export function Brand() {
+  const rootRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const taglineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const root = rootRef.current;
     const title = titleRef.current;
     const tagline = taglineRef.current;
-    if (!title || !tagline) return;
+    if (!root || !title || !tagline) return;
 
     // Layout width of the wordmark at BASE_FONT. Unaffected by transforms,
     // so it only needs remeasuring when the font or viewport changes.
@@ -58,7 +60,10 @@ export function Brand() {
         : 1;
       const headerScale = HEADER_FONT / BASE_FONT;
 
-      const t = morph(ringScrollProgress());
+      // No header bar in the mobile design, so there is nothing to shrink
+      // into: the wordmark stays big and rides away with the hero instead.
+      const mobile = vw < 768;
+      const t = mobile ? 0 : morph(ringScrollProgress());
       const scale = heroScale + (headerScale - heroScale) * t;
 
       // Always centred, at every size. Interpolating position and scale
@@ -73,13 +78,20 @@ export function Brand() {
       title.style.transform = `translate(${left - padX}px, ${top - padTop}px) scale(${scale})`;
 
       // Tagline rides just under the wordmark and travels on the same
-      // curve, so the two read as one movement.
+      // curve, so the two read as one movement. On mobile the wordmark
+      // stacks onto two lines, so it sits twice as far down.
+      const lines = mobile ? 2 : 1;
       const heroTaglineTop =
-        padTop + BASE_FONT * LINE_HEIGHT * heroScale + 18;
+        padTop + BASE_FONT * LINE_HEIGHT * heroScale * lines + 18;
       const taglineTop =
         heroTaglineTop + (HEADER_TAGLINE_TOP - heroTaglineTop) * t;
       tagline.style.transform = `translateY(${taglineTop}px)`;
       tagline.style.fontSize = `${16 + (14 - 16) * t}px`;
+
+      // Past the hero there is no header to hold it, so on mobile the whole
+      // brand rides away with the page exactly as the band does.
+      const away = mobile ? ringScrollOverflow() : 0;
+      root.style.transform = away ? `translateY(${-away}px)` : "";
 
       frame = requestAnimationFrame(tick);
     };
@@ -92,14 +104,17 @@ export function Brand() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
+    <div ref={rootRef} className="pointer-events-none fixed inset-x-0 top-0 z-50">
       <div className="px-6 pt-7 sm:px-10 sm:pt-8">
+        {/* Stacked on mobile, one line from `sm` up. Measuring scrollWidth
+            gives the widest line either way, which is what has to fit. */}
         <h1
           ref={titleRef}
           className="font-display w-fit origin-top-left whitespace-nowrap uppercase text-ink"
           style={{ fontSize: BASE_FONT, lineHeight: LINE_HEIGHT }}
         >
-          {site.name}
+          <span className="block sm:inline">Valeriia</span>{" "}
+          <span className="block sm:inline">Koiava</span>
         </h1>
       </div>
       <div
