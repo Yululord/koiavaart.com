@@ -22,6 +22,16 @@ const MOBILE = {
   taglineFont: 12,
 };
 
+/**
+ * Mobile pins the text block to the top so the artwork gets the rest of the
+ * frame: 16px in from the top and sides, 32px between the three rows.
+ */
+const MOBILE_INSET = 16;
+const MOBILE_GAP = 32;
+/** Line box of the tagline and categories rows at their hero size (16px). */
+const CAPTION_LINE = 24;
+const MOBILE_TITLE_TOP = MOBILE_INSET + CAPTION_LINE + MOBILE_GAP;
+
 function smoothRange(p: number, start: number, end: number) {
   const t = (p - start) / (end - start);
   const c = t < 0 ? 0 : t > 1 ? 1 : t;
@@ -63,10 +73,10 @@ export function Brand() {
       const mobile = vw < 768;
       const end = mobile ? MOBILE : DESKTOP;
 
-      const padX = mobile ? 16 : 40;
+      const padX = mobile ? MOBILE_INSET : 40;
       // Mobile leads with the tagline, so the wordmark starts further down.
-      const taglineHome = mobile ? 56 : 32;
-      const padTop = mobile ? taglineHome + 19 + 48 : 32;
+      const taglineHome = mobile ? MOBILE_INSET : 32;
+      const padTop = mobile ? MOBILE_TITLE_TOP : 32;
 
       const heroScale = naturalWidth
         ? ((vw - padX * 2) * (mobile ? 0.92 : 1)) / naturalWidth
@@ -95,7 +105,7 @@ export function Brand() {
       // Categories sit under the wordmark on mobile and fade out as it
       // collapses into the header — there is no room for them there.
       if (categories) {
-        const categoriesTop = padTop + titleHeight + 48;
+        const categoriesTop = padTop + titleHeight + MOBILE_GAP;
         categories.style.transform = `translateY(${categoriesTop * (1 - t)}px)`;
         categories.style.opacity = String(Math.max(0, 1 - t * 2));
       }
@@ -112,7 +122,8 @@ export function Brand() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
-      <div className="px-4 pt-[123px] md:px-10 md:pt-8">
+      {/* pt matches MOBILE_TITLE_TOP / the desktop padTop above. */}
+      <div className="px-4 pt-[72px] md:px-10 md:pt-8">
         {/* Stacked and centred on mobile, one line from `md` up. Measuring
             scrollWidth gives the widest line either way. */}
         <h1
@@ -127,7 +138,7 @@ export function Brand() {
 
       <div
         ref={taglineRef}
-        className="absolute inset-x-0 top-0 flex justify-between px-4 font-body text-muted md:px-10"
+        className="absolute inset-x-0 top-0 flex justify-between px-4 font-body leading-6 text-muted md:px-10"
       >
         <p>{site.taglineLeft}</p>
         <p>{site.taglineRight}</p>
@@ -136,7 +147,7 @@ export function Brand() {
       {/* Mobile only — on desktop these live in the footer row. */}
       <div
         ref={categoriesRef}
-        className="absolute inset-x-0 top-0 flex justify-between px-4 font-body text-base text-muted md:hidden"
+        className="absolute inset-x-0 top-0 flex justify-between px-4 font-body text-base leading-6 text-muted md:hidden"
       >
         {site.categories.map((category, i) => (
           <span key={category} className="contents">

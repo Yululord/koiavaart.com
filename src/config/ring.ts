@@ -138,14 +138,14 @@ export const mobileRing: RingConfig = {
   copies: 1,
   cardWidthRing: 0.48,
 
-  lineSpacing: 0.68,
-  cardWidthLine: 0.6,
+  lineSpacing: 0.744,
+  cardWidthLine: 0.622,
 
   // Mobile stacks tagline, wordmark and categories above the band, so the
-  // ring sits well below centre to clear them. It rises a little as it
+  // ring sits well below centre to clear them. It rises back to centre as it
   // unwinds, by which point that text has collapsed into the header.
   verticalOffset: -0.17,
-  verticalOffsetLine: -0.1,
+  verticalOffsetLine: 0.015,
 
   tiltX: 0.17,
   tiltZ: 0,
@@ -153,16 +153,16 @@ export const mobileRing: RingConfig = {
   heightJitter: 0.06,
   sizeJitter: 0.14,
   jitterFlatten: 1,
-  depthFade: 0.17,
+  depthFade: 0.03,
 
-  idleSpeed: -0.0111,
+  idleSpeed: 0.005,
   stripTravel: -1.3,
   pointerPush: 0,
   pointerTilt: 0,
   unwindEnd: 0.42,
   fadeStart: 1,
 
-  fov: 49,
+  fov: 66,
   hoverScale: 1,
 };
 
