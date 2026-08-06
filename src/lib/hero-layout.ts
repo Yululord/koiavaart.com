@@ -67,7 +67,7 @@ export function mobileTextHeight(vw: number) {
 }
 
 /** Mean aspect of the works, standing in for a typical card. */
-const meanAspect =
+export const meanAspect =
   works.reduce((sum, work) => sum + work.width / work.height, 0) / works.length;
 
 /**

@@ -12,7 +12,7 @@ import {
   learnMoreTexture,
 } from "@/components/three/caption-texture";
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
-import { mobileBandCentre } from "@/lib/hero-layout";
+import { meanAspect, mobileBandCentre } from "@/lib/hero-layout";
 import { openWork } from "@/lib/work-overlay";
 import {
   activeRing,
@@ -199,17 +199,13 @@ function WorkPlane({
     );
     const after = Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd);
 
-    // Mobile shows one card at a time, so the line is walked through work by
-    // work: it opens with the first centred and comes to rest on the last,
-    // covering the set exactly once. Desktop keeps its tuned travel, where a
-    // whole row is on screen and the band reads as continuous.
-    //
-    // The half-set head start is a constant, not something that eases in with
-    // the unwind: while coiled it only rotates the ring, whereas easing it in
-    // slid the band left to right as it opened, against the rotation.
-    const uniqueSpan = (ringSetSize - 1) * spacing;
+    // Mobile shows one card at a time, so it walks the line work by work.
+    // No head start: the band opens around whichever painting happens to be
+    // at the front of the cylinder, the way it does on desktop, rather than
+    // jumping to a fixed one. One short of a full lap covers every work
+    // exactly once and comes to rest on the ninth.
     const scrolled = isMobileRing()
-      ? uniqueSpan * (0.5 - after)
+      ? -after * (ringSetSize - 1) * spacing
       : after * perPass * cfg.stripTravel;
 
     // Parallax belongs to the cylinder only: once the band is a flat row of
@@ -220,12 +216,12 @@ function WorkPlane({
     // infinity, so the circle opens out into a line rather than collapsing.
     const k = Math.max(1 - e, 1e-4);
 
-    // The circumference grows with the radius, so a flattened band has
-    // nothing left to wrap around — which is what kept bringing cards back
-    // for a second appearance once the line started travelling.
+    // The band stays a loop, so it can be picked up anywhere. Duplicates
+    // were never the wrapping itself but travelling further than one lap:
+    // hold the journey to a single pass and each work comes round once.
     const s = wrapSigned(
       (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
-      isMobileRing() ? period / k : period,
+      period,
     );
 
     const r = radius / k;
@@ -251,11 +247,18 @@ function WorkPlane({
     // and its control are measured from this rather than from the capped
     // width, so a painting that has to come down in size still carries type
     // at the same size as every other card.
+    // Cards are sized by width, so a narrow painting gets the same width as
+    // a broad one and stands far taller — it reads as the biggest thing on
+    // the page. Splitting the difference between matching widths and
+    // matching heights evens out the area they cover, while the aspect stays
+    // exactly as painted.
+    const evenArea = isMobileRing() ? Math.sqrt(aspect / meanAspect) : 1;
     const fullW =
       vw *
       THREE.MathUtils.lerp(cfg.cardWidthRing, cfg.cardWidthLine, e) *
       sizeVary *
-      hoverScale;
+      hoverScale *
+      evenArea;
     let cardW = fullW;
     // Coiled, the band is placed as part of the hero group so it stays
     // centred with the text whatever the screen height; the resolved line
