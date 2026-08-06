@@ -455,11 +455,17 @@ function Ring() {
       (activeRing().tiltX + pointer.y * activeRing().pointerTilt) * (1 - e);
     group.rotation.z = activeRing().tiltZ * (1 - e);
 
-    // Past the end of the runway the band stops being pinned and rides the
-    // page instead, translating up one-for-one with the scroll. One world
-    // unit is one CSS pixel here, and +y is up, so it tracks the page
-    // exactly — and unwinds in reverse on the way back.
-    group.position.y = ringScrollOverflow();
+    // Past the end of the runway, desktop lets the band ride the page:
+    // translating up one-for-one with the scroll, one world unit to the CSS
+    // pixel, so it reads as scrolling away like any other section.
+    //
+    // Mobile holds it still instead. Redrawing a fixed canvas to cancel out
+    // the scroll means the band is always a frame behind the page it is
+    // pretending to be part of, which on a phone reads as the whole scene
+    // lurching. The About section is opaque and sits above the canvas, so
+    // simply leaving the band where it is lets the page cover it over — no
+    // per-frame correction, and nothing to fall behind.
+    group.position.y = isMobileRing() ? 0 : ringScrollOverflow();
   });
 
   return (
