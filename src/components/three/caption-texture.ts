@@ -99,35 +99,42 @@ export function cardLabelTexture(
   return texture;
 }
 
+/**
+ * Tertiary: words and an arrow on the page itself, no pill and no border.
+ * It sits under the caption rather than over the painting, so it no longer
+ * has to hold up against the artwork and can drop the white plate.
+ */
 function paintButton(ctx: CanvasRenderingContext2D, color: string) {
   ctx.clearRect(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
-  const inset = 3;
-  const r = (BUTTON_HEIGHT - inset * 2) / 2;
 
-  // Solid white: the pill sits over the artwork itself, so it has to hold
-  // up against a dark painting as readily as a pale one.
-  ctx.beginPath();
-  ctx.roundRect(
-    inset,
-    inset,
-    BUTTON_WIDTH - inset * 2,
-    BUTTON_HEIGHT - inset * 2,
-    r,
-  );
-  ctx.fillStyle = "#ffffff";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(0,0,0,0.12)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  const label = "Learn more";
+  const gap = BUTTON_TEXT * 0.45;
+  const arrow = BUTTON_TEXT * 0.62;
+  const mid = BUTTON_HEIGHT / 2;
 
   ctx.font = `500 ${BUTTON_TEXT}px ${fontStack()}`;
+  const textWidth = ctx.measureText(label).width;
+  const startX = (BUTTON_WIDTH - (textWidth + gap + arrow)) / 2;
+
   ctx.fillStyle = color;
-  ctx.textAlign = "center";
+  ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("Learn more", BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2 + 1);
+  ctx.fillText(label, startX, mid + 1);
+
+  // Chevron, pointing the way the card opens.
+  const x = startX + textWidth + gap;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(2, BUTTON_TEXT * 0.09);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(x, mid - arrow / 2);
+  ctx.lineTo(x + arrow / 2, mid);
+  ctx.lineTo(x, mid + arrow / 2);
+  ctx.stroke();
 }
 
-/** One shared pill for every card — the artwork behind it is the hit area. */
+/** One shared control for every card — the artwork behind it is the hit area. */
 export function learnMoreTexture(color: string) {
   if (buttonTexture) return buttonTexture;
 

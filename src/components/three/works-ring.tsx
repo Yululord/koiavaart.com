@@ -173,21 +173,33 @@ function WorkPlane({
     // and pointer parallax are all shifts along the arc, so cards always
     // travel in the direction of rotation.
     const idle = (performance.now() / 1000) * cfg.idleSpeed * perPass;
-    const scrolled =
-      (Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd)) *
-      perPass *
-      cfg.stripTravel;
+    const after = Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd);
+
+    // Mobile shows one card at a time, so the line is walked through work by
+    // work: it opens with the first centred and comes to rest on the last,
+    // covering the set exactly once. Desktop keeps its tuned travel, where a
+    // whole row is on screen and the band reads as continuous.
+    const uniqueSpan = (ringSetSize - 1) * spacing;
+    const scrolled = isMobileRing()
+      ? uniqueSpan * (e * 0.5 - after)
+      : after * perPass * cfg.stripTravel;
+
     // Parallax belongs to the cylinder only: once the band is a flat row of
     // clickable artworks, having it drift under the cursor works against you.
     const nudge = pointer.x * perPass * cfg.pointerPush * (1 - e);
-    const s = wrapSigned(
-      (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
-      period,
-    );
 
     // Unroll: the band keeps its arc length while its radius grows toward
     // infinity, so the circle opens out into a line rather than collapsing.
     const k = Math.max(1 - e, 1e-4);
+
+    // The circumference grows with the radius, so a flattened band has
+    // nothing left to wrap around — which is what kept bringing cards back
+    // for a second appearance once the line started travelling.
+    const s = wrapSigned(
+      (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
+      isMobileRing() ? period / k : period,
+    );
+
     const r = radius / k;
     const phi = s / r;
     const x = r * Math.sin(phi);
@@ -228,9 +240,10 @@ function WorkPlane({
     // aspect rather than being squashed. Only the resolved line is capped;
     // the cylinder is left alone.
     if (isMobileRing()) {
-      // Everything below the card's centre: half the artwork, then the
-      // caption hanging under it.
-      const perWidth = 1 / (2 * aspect) + LABEL_ASPECT * 1.05;
+      // Everything below the card's centre: half the artwork, the caption
+      // hanging under it, then the Learn more control under that.
+      const perWidth =
+        1 / (2 * aspect) + LABEL_ASPECT * 1.05 + 0.52 * BUTTON_ASPECT * 1.1;
       const room = y - (PILL_TOP_FROM_BOTTOM - vh / 2) - PILL_CLEARANCE;
       const capW = room > 0 ? room / perWidth : 0;
       cardW *= THREE.MathUtils.lerp(1, Math.min(1, capW / cardW), e);
@@ -280,12 +293,12 @@ function WorkPlane({
     const button = buttonRef.current;
     const buttonMaterial = buttonMaterialRef.current;
     if (button && buttonMaterial) {
-      // Centred over the artwork rather than below it. Sized from the
-      // unscaled width so it stays put while the card zooms under it.
+      // Under the caption, clear of the painting. Sized from the unscaled
+      // width so it stays put while the card zooms under it.
       const buttonW = labelW * 0.52;
       const buttonH = buttonW * BUTTON_ASPECT;
       button.scale.set(buttonW, buttonH, 1);
-      button.position.set(0, 0, 0.1);
+      button.position.set(0, labelY - labelH / 2 - buttonH * 0.55, 0.1);
       button.renderOrder = Math.round(z) + 2;
 
       // Revealed by hover where there is a pointer, always shown where

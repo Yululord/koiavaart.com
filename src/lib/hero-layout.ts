@@ -26,8 +26,12 @@ export const MOBILE_GAP = 24;
 export const CAPTION_LINE = 24;
 /** Share of the content width the wordmark fills. */
 export const MOBILE_TITLE_FILL = 0.69;
-/** Between the categories row and the top of the band. */
-const TEXT_TO_BAND = 24;
+/**
+ * Between the categories row and the top of the band. Wider than the gaps
+ * inside the text block: cards on the far side of the cylinder ride above
+ * the near ones, so the band reaches higher than its centre suggests.
+ */
+const TEXT_TO_BAND = 56;
 /**
  * Height of the bar the Contact button is centred in. The group is centred
  * in the space above it rather than in the viewport, so the button never
@@ -67,19 +71,27 @@ const meanAspect =
   works.reduce((sum, work) => sum + work.width / work.height, 0) / works.length;
 
 /**
- * Visual extent of the coiled band: a typical card, plus the full spread the
- * height scatter throws them across.
+ * Visual extent of the coiled band: a typical card, plus roughly the spread
+ * the height scatter throws them across. Only a handful of cards are on the
+ * near side at a time, so they never reach the full range of the scatter —
+ * counting all of it read as a taller band than the eye sees, and left the
+ * composition sitting high with a gap above the button.
  */
 export function mobileBandHeight(vw: number, vh: number) {
   const cfg = activeRing();
-  return (vw * cfg.cardWidthRing) / meanAspect + 2 * cfg.heightJitter * vh;
+  return (vw * cfg.cardWidthRing) / meanAspect + cfg.heightJitter * vh;
 }
 
-/** Top of the text block — the top of the group as a whole. */
+/**
+ * Top of the text block — the top of the group as a whole. Centred in the
+ * frame itself: the Contact button is a small pill on the baseline rather
+ * than a band of furniture, and reserving its full height pushed the
+ * composition off centre.
+ */
 export function mobileGroupTop(vw: number, vh: number) {
   const group =
     mobileTextHeight(vw) + TEXT_TO_BAND + mobileBandHeight(vw, vh);
-  return Math.max(MOBILE_INSET, (vh - PILL_ZONE - group) / 2);
+  return Math.max(MOBILE_INSET, (vh - group) / 2);
 }
 
 /**

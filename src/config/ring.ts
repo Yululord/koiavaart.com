@@ -155,7 +155,12 @@ export const mobileRing: RingConfig = {
   jitterFlatten: 1,
   depthFade: 0.03,
 
-  idleSpeed: 0.005,
+  // Still until you scroll. A drift that only rotates the cylinder becomes a
+  // sideways crawl once the band is a flat line, and there is no pointer on
+  // a phone to justify the motion.
+  idleSpeed: 0,
+  // Unused on mobile: the travel is derived from the number of works, so the
+  // line lands on the last one instead of overshooting into a repeat.
   stripTravel: -1.3,
   pointerPush: 0,
   pointerTilt: 0,

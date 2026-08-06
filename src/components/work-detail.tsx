@@ -111,29 +111,9 @@ export function WorkDetail() {
       aria-label={work.title}
       className="fixed inset-0 z-[60] overflow-y-auto bg-white"
     >
-      {/* Two ways out, because a lone icon in the corner was not reading as
-          one: a worded trail on the left, the expected × on the right. */}
+      {/* The × is the only way out, and it takes the initial focus. */}
       <button
         ref={closeRef}
-        type="button"
-        onClick={closeWork}
-        className="absolute left-2 top-2 z-10 flex items-center gap-2 rounded-full p-2 font-body text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 sm:left-6 sm:top-6"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          aria-hidden
-        >
-          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Back to works
-      </button>
-
-      <button
         type="button"
         onClick={closeWork}
         aria-label="Close"

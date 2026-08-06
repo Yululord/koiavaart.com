@@ -10,7 +10,9 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="relative z-20 bg-white px-6 pb-24 pt-10 sm:px-10 sm:pb-32 sm:pt-12"
+      // Barely any top padding on mobile: the band leaves its own gap as it
+      // rides away, so the section's own inset only widens it.
+      className="relative z-20 bg-white px-6 pb-24 pt-1 sm:px-10 sm:pb-32 sm:pt-12"
     >
       <p className="font-display max-w-[54%] text-[clamp(1.75rem,3.7vw,3.3rem)] uppercase leading-[1.06] text-ink max-lg:max-w-none">
         &ldquo;{about.quote}&rdquo;
