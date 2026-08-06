@@ -212,19 +212,20 @@ function WorkPlane({
     // jumping to a fixed one. One short of a full lap covers every work
     // exactly once and comes to rest on the ninth.
     //
-    // The idle turn leaves the band part way between two cards, so it eases
-    // onto the nearest one as it flattens and the strip always opens square
-    // on a painting. Idle has stopped accumulating by then, so it holds.
-    const drift = wrapSigned(idle, spacing);
-
     // On mobile the strip is dragged sideways rather than scrolled: sending
     // the paintings across the screen in response to a downward swipe reads
     // as a fight with the page. Scrolling down simply carries on down.
+    //
+    // Nothing nudges it onto the nearest card any more. That correction was
+    // a remainder, so it flipped by a whole card width whenever the idle
+    // turn crossed halfway between two — a jump every time you scrolled back
+    // up through the unwrap. The strip loops freely now, so where it opens
+    // no longer needs fixing.
     let scrolled: number;
     if (isMobileRing()) {
       setSwipeEnabled(e > 0.99);
       if (e < 0.05) resetSwipe();
-      scrolled = -drift * e + advanceSwipe(delta);
+      scrolled = advanceSwipe(state.clock.elapsedTime);
     } else {
       scrolled = after * perPass * cfg.stripTravel;
     }

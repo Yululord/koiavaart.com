@@ -48,8 +48,21 @@ export function swipeIsDragging() {
   return moved;
 }
 
-/** Advances the glide and returns where the strip has got to. */
-export function advanceSwipe(delta: number) {
+let advancedAt = -1;
+
+/**
+ * Advances the glide and returns where the strip has got to.
+ *
+ * Every card asks for this within the same frame, so the step is taken once
+ * and the rest are handed the same answer: stepping per card decayed the
+ * glide as many times over as there are cards, which is what made a throw
+ * die on the spot.
+ */
+export function advanceSwipe(now: number) {
+  if (now === advancedAt) return shown;
+  const delta = advancedAt < 0 ? 0 : Math.min(0.1, now - advancedAt);
+  advancedAt = now;
+
   if (!dragging && velocity !== 0) {
     target += velocity * delta;
     // Raised to the elapsed time, so the glide lasts the same wall-clock
