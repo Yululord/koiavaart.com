@@ -144,19 +144,37 @@ function WorkPlane({
     const radius = vw * cfg.radiusFactor;
 
     // Ring spacing is pinned to whatever divides the circumference exactly,
-    // so the cylinder always closes; the line uses its own. Every card is
-    // carried through — nothing is dropped on the way.
-    const spacing = THREE.MathUtils.lerp(
-      (2 * Math.PI * radius) / total,
-      vw * cfg.lineSpacing,
+    // so the cylinder always closes; the line uses its own.
+    const circumference = 2 * Math.PI * radius;
+    const ringSpacing = circumference / total;
+    const lineSpacing = vw * cfg.lineSpacing;
+    const copies = total / ringSetSize;
+
+    // On the ring every card gets its own slot. In the line the extra
+    // copies converge onto the card they duplicate and sit exactly behind
+    // it, so the strip shows each painting once — without anything having
+    // to fade out or vanish on the way.
+    const ringPos = (index - (total - 1) / 2) * ringSpacing;
+    const linePos =
+      ((index % ringSetSize) - (ringSetSize - 1) / 2) * lineSpacing;
+    const laid = THREE.MathUtils.lerp(ringPos, linePos, e);
+
+    // The band therefore loops over one full lap while coiled, and over a
+    // single pass through the works once flat.
+    const period = THREE.MathUtils.lerp(
+      circumference,
+      ringSetSize * lineSpacing,
       e,
     );
-    const period = spacing * total;
 
     // Motion is measured in passes through the set of works rather than
     // laps of the whole band, so the speed controls keep their meaning
     // however many copies are wrapped around the ring.
-    const perPass = spacing * ringSetSize;
+    const perPass = THREE.MathUtils.lerp(
+      circumference / copies,
+      ringSetSize * lineSpacing,
+      e,
+    );
 
     // Arc-length position of this card along the band. Idle drift, scroll
     // and pointer parallax are all shifts along the arc, so cards always
@@ -169,10 +187,7 @@ function WorkPlane({
     // Parallax belongs to the cylinder only: once the band is a flat row of
     // clickable artworks, having it drift under the cursor works against you.
     const nudge = pointer.x * perPass * cfg.pointerPush * (1 - e);
-    const s = wrapSigned(
-      (index - (total - 1) / 2) * spacing + idle + scrolled + nudge,
-      period,
-    );
+    const s = wrapSigned(laid + idle + scrolled + nudge, period);
 
     // Unroll: the band keeps its arc length while its radius grows toward
     // infinity, so the circle opens out into a line rather than collapsing.
