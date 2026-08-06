@@ -21,7 +21,7 @@ export const LINE_HEIGHT = 0.88;
 /** Inset from the sides, and the floor for the group's distance from the top. */
 export const MOBILE_INSET = 16;
 /** Between the tagline, the wordmark and the categories. */
-export const MOBILE_GAP = 24;
+export const MOBILE_GAP = 28;
 /** Line box of the caption rows, fixed so type size does not move the layout. */
 export const CAPTION_LINE = 24;
 /** Share of the content width the wordmark fills. */
@@ -31,7 +31,7 @@ export const MOBILE_TITLE_FILL = 0.69;
  * inside the text block: cards on the far side of the cylinder ride above
  * the near ones, so the band reaches higher than its centre suggests.
  */
-const TEXT_TO_BAND = 56;
+const TEXT_TO_BAND = 76;
 /**
  * Height of the bar the Contact button is centred in. The group is centred
  * in the space above it rather than in the viewport, so the button never
