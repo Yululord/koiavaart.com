@@ -13,6 +13,14 @@ import {
 } from "@/components/three/caption-texture";
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import { meanAspect, mobileBandCentre } from "@/lib/hero-layout";
+import {
+  advanceSwipe,
+  attachSwipe,
+  resetSwipe,
+  setSwipeEnabled,
+  setSwipeRange,
+  swipeIsDragging,
+} from "@/lib/strip-swipe";
 import { openWork } from "@/lib/work-overlay";
 import {
   activeRing,
@@ -205,15 +213,23 @@ function WorkPlane({
     // jumping to a fixed one. One short of a full lap covers every work
     // exactly once and comes to rest on the ninth.
     //
-    // The idle turn leaves the band part way between two cards, so a whole
-    // number of steps would land wherever it happened to be — the last card
-    // half out of frame, and differently each visit. Carrying that remainder
-    // into the journey lands it square on a card every time. Idle has stopped
-    // accumulating by the time any of this runs, so it holds still.
+    // The idle turn leaves the band part way between two cards, so it eases
+    // onto the nearest one as it flattens and the strip always opens square
+    // on a painting. Idle has stopped accumulating by then, so it holds.
     const drift = wrapSigned(idle, spacing);
-    const scrolled = isMobileRing()
-      ? -after * ((ringSetSize - 1) * spacing + drift)
-      : after * perPass * cfg.stripTravel;
+
+    // On mobile the strip is dragged sideways rather than scrolled: sending
+    // the paintings across the screen in response to a downward swipe reads
+    // as a fight with the page. Scrolling down simply carries on down.
+    let scrolled: number;
+    if (isMobileRing()) {
+      setSwipeRange(-(ringSetSize - 1) * spacing, 0);
+      setSwipeEnabled(e > 0.99);
+      if (e < 0.05) resetSwipe();
+      scrolled = -drift * e + advanceSwipe(delta);
+    } else {
+      scrolled = after * perPass * cfg.stripTravel;
+    }
 
     // Parallax belongs to the cylinder only: once the band is a flat row of
     // clickable artworks, having it drift under the cursor works against you.
@@ -370,6 +386,9 @@ function WorkPlane({
         }}
         onClick={(event) => {
           event.stopPropagation();
+          // A sideways drag ends on the card it started from; opening it
+          // would hijack every swipe.
+          if (swipeIsDragging()) return;
           hovered.current = false;
           document.body.style.cursor = "";
           openWork(slug);
@@ -463,6 +482,8 @@ function Ring() {
 }
 
 export function WorksRing() {
+  const shellRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const onMove = (event: PointerEvent) => {
       pointer.targetX = (event.clientX / window.innerWidth) * 2 - 1;
@@ -472,8 +493,19 @@ export function WorksRing() {
     return () => window.removeEventListener("pointermove", onMove);
   }, []);
 
+  useEffect(() => {
+    const shell = shellRef.current;
+    return shell ? attachSwipe(shell) : undefined;
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-10" aria-hidden>
+    // pan-y hands vertical gestures straight to the page and leaves the
+    // horizontal ones to the strip.
+    <div
+      ref={shellRef}
+      className="fixed inset-0 z-10 touch-pan-y"
+      aria-hidden
+    >
       <Canvas gl={{ alpha: true, antialias: true }} dpr={[1, 2]}>
         <CameraRig />
         <Ring />

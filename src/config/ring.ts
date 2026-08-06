@@ -164,7 +164,9 @@ export const mobileRing: RingConfig = {
   stripTravel: -1.3,
   pointerPush: 0,
   pointerTilt: 0,
-  unwindEnd: 0.42,
+  // Late, because the runway is short and the unwrap is all it has to do:
+  // the strip is browsed by dragging once it has opened.
+  unwindEnd: 0.8,
   fadeStart: 1,
 
   fov: 66,

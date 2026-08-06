@@ -45,7 +45,9 @@ export function Hero() {
 
   return (
     <>
-      <div id={RING_RUNWAY_ID} className="h-[420vh]" />
+      {/* Mobile only needs enough runway to unwrap the cylinder — the strip
+          is browsed by dragging it, not by scrolling further. */}
+      <div id={RING_RUNWAY_ID} className="h-[200vh] md:h-[420vh]" />
       <div
         ref={captionsRef}
         // Desktop only. The mobile design has nothing down here but the
