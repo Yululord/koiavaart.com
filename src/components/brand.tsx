@@ -8,17 +8,22 @@ import { ringScrollProgress } from "@/lib/scroll-progress";
 const BASE_FONT = 100;
 const LINE_HEIGHT = 0.88;
 
-/** Where each piece ends up once it has settled into the header bar. */
+/**
+ * Where each piece ends up once it has settled into the header bar, plus
+ * the size the side captions start at in the hero.
+ */
 const DESKTOP = {
   font: 24,
   titleTop: 21,
   taglineTop: 25,
+  captionFont: 16,
   taglineFont: 14,
 };
 const MOBILE = {
   font: 18,
   titleTop: 19,
   taglineTop: 22,
+  captionFont: 14,
   taglineFont: 12,
 };
 
@@ -102,7 +107,7 @@ export function Brand() {
       const taglineStart = mobile ? taglineHome : padTop + titleHeight + 18;
       const taglineTop = taglineStart + (end.taglineTop - taglineStart) * t;
       tagline.style.transform = `translateY(${taglineTop}px)`;
-      tagline.style.fontSize = `${16 + (end.taglineFont - 16) * t}px`;
+      tagline.style.fontSize = `${end.captionFont + (end.taglineFont - end.captionFont) * t}px`;
 
       // Categories sit under the wordmark on mobile and fade out as it
       // collapses into the header — there is no room for them there.
@@ -149,7 +154,7 @@ export function Brand() {
       {/* Mobile only — on desktop these live in the footer row. */}
       <div
         ref={categoriesRef}
-        className="absolute inset-x-0 top-0 flex justify-between px-4 font-body text-base leading-6 text-muted md:hidden"
+        className="absolute inset-x-0 top-0 flex justify-between px-4 font-body text-sm leading-6 text-muted md:hidden"
       >
         {site.categories.map((category, i) => (
           <span key={category} className="contents">
