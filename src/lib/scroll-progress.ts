@@ -3,7 +3,7 @@ import { RING_RUNWAY_ID } from "@/lib/constants";
 let forcedProgress: number | null | undefined;
 let forcedOverflow: number | null | undefined;
 let cachedRunway: HTMLElement | null = null;
-let lastStamp = -1;
+let measured = false;
 let lastProgress = 0;
 let lastOverflow = 0;
 
@@ -23,14 +23,23 @@ function readForcedProgress() {
  * Reads the runway's position once per animation frame and caches both
  * values, so the ring's many planes can call either freely.
  *
+ * The cache is cleared by a frame callback rather than compared against a
+ * clock: performance.now() all but never repeats, so every caller was
+ * measuring afresh. That forced a layout on each of them, and — because the
+ * scroll moves while a frame is being built — handed them positions taken
+ * at slightly different moments, which is what set the band shivering
+ * against the page as it scrolled away.
+ *
  * Deliberately not driven by a scroll library: reading layout directly
  * stays correct through resizes, restored scroll positions and programmatic
  * jumps, and works unchanged under Lenis.
  */
 function measure() {
-  const stamp = performance.now();
-  if (stamp === lastStamp) return;
-  lastStamp = stamp;
+  if (measured) return;
+  measured = true;
+  requestAnimationFrame(() => {
+    measured = false;
+  });
 
   if (!cachedRunway || !cachedRunway.isConnected) {
     cachedRunway = document.getElementById(RING_RUNWAY_ID);
