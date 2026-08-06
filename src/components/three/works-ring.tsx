@@ -15,6 +15,7 @@ import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import { openWork } from "@/lib/work-overlay";
 import {
   activeRing,
+  isMobileRing,
   ringSetSize,
   ringTotalCount,
   signedJitter,
@@ -22,6 +23,15 @@ import {
 } from "@/config/ring";
 
 const textureLoader = new THREE.TextureLoader();
+
+/**
+ * Top edge of the Contact button, in px up from the bottom of the viewport:
+ * it is centred in a 96px bar and stands 48px tall. Keep in step with
+ * <ContactPill />.
+ */
+const PILL_TOP_FROM_BOTTOM = 72;
+/** Breathing room between a card's caption and the button. */
+const PILL_CLEARANCE = 12;
 
 /** Match the site's ink and secondary text colours. */
 const TITLE_COLOR = "#000000";
@@ -196,15 +206,30 @@ function WorkPlane({
 
     // Card width is set outright rather than as a share of the gap, so size
     // and spacing can be dialled independently.
-    const cardW =
+    let cardW =
       vw *
       THREE.MathUtils.lerp(cfg.cardWidthRing, cfg.cardWidthLine, e) *
       sizeVary *
       hoverScale;
-    const cardH = cardW / aspect;
     const y =
       vh * THREE.MathUtils.lerp(cfg.verticalOffset, cfg.verticalOffsetLine, e) +
       signedJitter(index, 2) * cfg.heightJitter * vh * jitter;
+
+    // On a phone the Contact button is pinned over the strip, and a tall
+    // portrait card pushes its caption underneath it. Cap the card so the
+    // caption always clears the button — by width, so the artwork keeps its
+    // aspect rather than being squashed. Only the resolved line is capped;
+    // the cylinder is left alone.
+    if (isMobileRing()) {
+      // Everything below the card's centre: half the artwork, then the
+      // caption hanging under it.
+      const perWidth = 1 / (2 * aspect) + LABEL_ASPECT * 1.05;
+      const room = y - (PILL_TOP_FROM_BOTTOM - vh / 2) - PILL_CLEARANCE;
+      const capW = room > 0 ? room / perWidth : 0;
+      cardW *= THREE.MathUtils.lerp(1, Math.min(1, capW / cardW), e);
+    }
+
+    const cardH = cardW / aspect;
 
     // The group carries placement; the meshes keep their own scales, so the
     // caption is not stretched by the artwork's aspect.
