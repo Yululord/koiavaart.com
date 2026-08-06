@@ -31,7 +31,7 @@ export const MOBILE_TITLE_FILL = 0.69;
  * inside the text block: cards on the far side of the cylinder ride above
  * the near ones, so the band reaches higher than its centre suggests.
  */
-const TEXT_TO_BAND = 76;
+const TEXT_TO_BAND = 91;
 /**
  * Height of the bar the Contact button is centred in. The group is centred
  * in the space above it rather than in the viewport, so the button never

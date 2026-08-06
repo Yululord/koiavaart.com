@@ -34,6 +34,25 @@ const PILL_TOP_FROM_BOTTOM = 72;
 /** Breathing room between a card's caption and the button. */
 const PILL_CLEARANCE = 12;
 
+/**
+ * Idle rotation, shared by every card and advanced once a frame.
+ *
+ * Accumulated rather than derived from the clock so it can be *slowed* to a
+ * stop as the band flattens without ever running backwards: scaling elapsed
+ * time would unwind the distance already travelled and drag the whole band
+ * back the way it came.
+ */
+let idleArc = 0;
+let idleAt = 0;
+
+function advanceIdle(now: number, rate: number) {
+  if (now !== idleAt) {
+    idleArc += (idleAt ? now - idleAt : 0) * rate;
+    idleAt = now;
+  }
+  return idleArc;
+}
+
 /** Match the site's ink and secondary text colours. */
 const TITLE_COLOR = "#000000";
 const INFO_COLOR = "#737373";
@@ -140,7 +159,7 @@ function WorkPlane({
     };
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const group = groupRef.current;
     const mesh = meshRef.current;
     const material = materialRef.current;
@@ -172,16 +191,25 @@ function WorkPlane({
     // Arc-length position of this card along the band. Idle drift, scroll
     // and pointer parallax are all shifts along the arc, so cards always
     // travel in the direction of rotation.
-    const idle = (performance.now() / 1000) * cfg.idleSpeed * perPass;
+    // Coasts to a stop as the band flattens, so the cylinder turns on its own
+    // but the resolved line holds still.
+    const idle = advanceIdle(
+      state.clock.elapsedTime,
+      cfg.idleSpeed * perPass * (1 - e),
+    );
     const after = Math.max(0, p - cfg.unwindEnd) / (1 - cfg.unwindEnd);
 
     // Mobile shows one card at a time, so the line is walked through work by
     // work: it opens with the first centred and comes to rest on the last,
     // covering the set exactly once. Desktop keeps its tuned travel, where a
     // whole row is on screen and the band reads as continuous.
+    //
+    // The half-set head start is a constant, not something that eases in with
+    // the unwind: while coiled it only rotates the ring, whereas easing it in
+    // slid the band left to right as it opened, against the rotation.
     const uniqueSpan = (ringSetSize - 1) * spacing;
     const scrolled = isMobileRing()
-      ? uniqueSpan * (e * 0.5 - after)
+      ? uniqueSpan * (0.5 - after)
       : after * perPass * cfg.stripTravel;
 
     // Parallax belongs to the cylinder only: once the band is a flat row of
@@ -219,11 +247,16 @@ function WorkPlane({
 
     // Card width is set outright rather than as a share of the gap, so size
     // and spacing can be dialled independently.
-    let cardW =
+    // The size the card would take if nothing were in its way. The caption
+    // and its control are measured from this rather than from the capped
+    // width, so a painting that has to come down in size still carries type
+    // at the same size as every other card.
+    const fullW =
       vw *
       THREE.MathUtils.lerp(cfg.cardWidthRing, cfg.cardWidthLine, e) *
       sizeVary *
       hoverScale;
+    let cardW = fullW;
     // Coiled, the band is placed as part of the hero group so it stays
     // centred with the text whatever the screen height; the resolved line
     // has the whole frame to itself and keeps its configured offset.
@@ -240,12 +273,14 @@ function WorkPlane({
     // aspect rather than being squashed. Only the resolved line is capped;
     // the cylinder is left alone.
     if (isMobileRing()) {
-      // Everything below the card's centre: half the artwork, the caption
-      // hanging under it, then the Learn more control under that.
-      const perWidth =
-        1 / (2 * aspect) + LABEL_ASPECT * 1.05 + 0.52 * BUTTON_ASPECT * 1.1;
-      const room = y - (PILL_TOP_FROM_BOTTOM - vh / 2) - PILL_CLEARANCE;
-      const capW = room > 0 ? room / perWidth : 0;
+      // The caption and its control keep their full size, so they take a
+      // fixed bite out of the space and only the artwork itself has to give.
+      const textW = fullW / hoverScale;
+      const below =
+        textW * LABEL_ASPECT * 1.05 + textW * 0.52 * BUTTON_ASPECT * 1.1;
+      const room =
+        y - (PILL_TOP_FROM_BOTTOM - vh / 2) - PILL_CLEARANCE - below;
+      const capW = room > 0 ? room * 2 * aspect : 0;
       cardW *= THREE.MathUtils.lerp(1, Math.min(1, capW / cardW), e);
     }
 
@@ -274,8 +309,9 @@ function WorkPlane({
     // Labels belong to the resolved line, so they arrive only once the band
     // has flattened out — there is no room for them on the cylinder.
     const reveal = THREE.MathUtils.smoothstep(e, 0.82, 1);
-    // Hold the label steady while the artwork grows under the cursor.
-    const labelW = cardW / hoverScale;
+    // Hold the label steady while the artwork grows under the cursor, and at
+    // the size it would have been had the card not been capped.
+    const labelW = fullW / hoverScale;
     const labelH = labelW * LABEL_ASPECT;
     const labelY = -cardH / 2 - labelH * 0.55;
 
