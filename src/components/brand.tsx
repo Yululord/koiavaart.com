@@ -24,13 +24,15 @@ const MOBILE = {
 
 /**
  * Mobile pins the text block to the top so the artwork gets the rest of the
- * frame: 16px in from the top and sides, 32px between the three rows.
+ * frame: 16px in from the top and sides, and 16px between the three rows.
  */
 const MOBILE_INSET = 16;
-const MOBILE_GAP = 32;
+const MOBILE_GAP = 16;
 /** Line box of the tagline and categories rows at their hero size (16px). */
 const CAPTION_LINE = 24;
 const MOBILE_TITLE_TOP = MOBILE_INSET + CAPTION_LINE + MOBILE_GAP;
+/** Share of the content width the wordmark fills on mobile. */
+const MOBILE_TITLE_FILL = 0.69;
 
 function smoothRange(p: number, start: number, end: number) {
   const t = (p - start) / (end - start);
@@ -79,7 +81,7 @@ export function Brand() {
       const padTop = mobile ? MOBILE_TITLE_TOP : 32;
 
       const heroScale = naturalWidth
-        ? ((vw - padX * 2) * (mobile ? 0.92 : 1)) / naturalWidth
+        ? ((vw - padX * 2) * (mobile ? MOBILE_TITLE_FILL : 1)) / naturalWidth
         : 1;
       const headerScale = end.font / BASE_FONT;
 
@@ -123,7 +125,7 @@ export function Brand() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
       {/* pt matches MOBILE_TITLE_TOP / the desktop padTop above. */}
-      <div className="px-4 pt-[72px] md:px-10 md:pt-8">
+      <div className="px-4 pt-[56px] md:px-10 md:pt-8">
         {/* Stacked and centred on mobile, one line from `md` up. Measuring
             scrollWidth gives the widest line either way. */}
         <h1
