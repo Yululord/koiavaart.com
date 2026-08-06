@@ -167,16 +167,21 @@ export const mobileRing: RingConfig = {
 };
 
 /** Phones and small tablets take the mobile set; everything else desktop. */
-const MOBILE_QUERY = "(max-width: 767px)";
-let mobileMatches = false;
+export const MOBILE_BREAKPOINT = 768;
 
+/**
+ * Measured on demand rather than cached, so this cannot fall out of step with
+ * the rest of the hero: <Brand /> reads the width every frame, and a cached
+ * flag left the two disagreeing until something subscribed.
+ */
 export function isMobileRing() {
-  return mobileMatches;
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < MOBILE_BREAKPOINT;
 }
 
 /** The set currently in force. Read fresh — the viewport can change. */
 export function activeRing(): RingConfig {
-  return mobileMatches ? mobileRing : desktopRing;
+  return isMobileRing() ? mobileRing : desktopRing;
 }
 
 /**
@@ -260,28 +265,30 @@ export function subscribeRingConfig(listener: () => void) {
 
   // Crossing the breakpoint swaps the whole set, and changes the card count
   // with it, so React has to hear about it as well as the render loop.
-  if (listeners.size === 1 && typeof window !== "undefined") {
-    mobileQuery = window.matchMedia(MOBILE_QUERY);
-    mobileMatches = mobileQuery.matches;
-    onQueryChange = () => {
-      mobileMatches = mobileQuery!.matches;
+  // Driven off resize rather than a media query listener: rotating a phone
+  // into landscape crosses the breakpoint, and this fires either way.
+  if (!onResize && typeof window !== "undefined") {
+    lastMobile = isMobileRing();
+    onResize = () => {
+      const now = isMobileRing();
+      if (now === lastMobile) return;
+      lastMobile = now;
       emit();
     };
-    mobileQuery.addEventListener("change", onQueryChange);
+    window.addEventListener("resize", onResize);
   }
 
   return () => {
     listeners.delete(listener);
-    if (listeners.size === 0 && mobileQuery && onQueryChange) {
-      mobileQuery.removeEventListener("change", onQueryChange);
-      mobileQuery = null;
-      onQueryChange = null;
+    if (listeners.size === 0 && onResize) {
+      window.removeEventListener("resize", onResize);
+      onResize = null;
     }
   };
 }
 
-let mobileQuery: MediaQueryList | null = null;
-let onQueryChange: (() => void) | null = null;
+let onResize: (() => void) | null = null;
+let lastMobile = false;
 
 /**
  * Stable pseudo-random value in [0, 1) for a given card and channel, so

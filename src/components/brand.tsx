@@ -3,10 +3,17 @@
 import { useEffect, useRef } from "react";
 import { site } from "@/data/site";
 import { ringScrollProgress } from "@/lib/scroll-progress";
-
-/** The wordmark is laid out at this size, then transformed to fit. */
-const BASE_FONT = 100;
-const LINE_HEIGHT = 0.88;
+import {
+  BASE_FONT,
+  CAPTION_LINE,
+  LINE_HEIGHT,
+  MOBILE_GAP,
+  MOBILE_INSET,
+  MOBILE_TITLE_FILL,
+  mobileGroupTop,
+  mobileTitleHeight,
+  setWordmarkWidth,
+} from "@/lib/hero-layout";
 
 /**
  * Where each piece ends up once it has settled into the header bar, plus
@@ -26,18 +33,6 @@ const MOBILE = {
   captionFont: 14,
   taglineFont: 12,
 };
-
-/**
- * Mobile pins the text block to the top so the artwork gets the rest of the
- * frame: 16px in from the top and sides, and 24px between the three rows.
- */
-const MOBILE_INSET = 16;
-const MOBILE_GAP = 24;
-/** Line box of the tagline and categories rows at their hero size (16px). */
-const CAPTION_LINE = 24;
-const MOBILE_TITLE_TOP = MOBILE_INSET + CAPTION_LINE + MOBILE_GAP;
-/** Share of the content width the wordmark fills on mobile. */
-const MOBILE_TITLE_FILL = 0.69;
 
 function smoothRange(p: number, start: number, end: number) {
   const t = (p - start) / (end - start);
@@ -69,7 +64,10 @@ export function Brand() {
     let naturalWidth = title.scrollWidth;
     const remeasure = () => {
       naturalWidth = title.scrollWidth;
+      // The band is placed relative to this text, so share the measurement.
+      setWordmarkWidth(naturalWidth);
     };
+    remeasure();
 
     if (document.fonts?.ready) document.fonts.ready.then(remeasure);
     window.addEventListener("resize", remeasure);
@@ -77,13 +75,17 @@ export function Brand() {
     let frame = 0;
     const tick = () => {
       const vw = window.innerWidth;
+      const vh = window.innerHeight;
       const mobile = vw < 768;
       const end = mobile ? MOBILE : DESKTOP;
 
       const padX = mobile ? MOBILE_INSET : 40;
-      // Mobile leads with the tagline, so the wordmark starts further down.
-      const taglineHome = mobile ? MOBILE_INSET : 32;
-      const padTop = mobile ? MOBILE_TITLE_TOP : 32;
+      // Mobile leads with the tagline, and the text and band ride together as
+      // one centred group, so where it starts depends on the viewport height.
+      const taglineHome = mobile ? mobileGroupTop(vw, vh) : 32;
+      const padTop = mobile
+        ? taglineHome + CAPTION_LINE + MOBILE_GAP
+        : 32;
 
       const heroScale = naturalWidth
         ? ((vw - padX * 2) * (mobile ? MOBILE_TITLE_FILL : 1)) / naturalWidth
@@ -97,10 +99,11 @@ export function Brand() {
       // keeps it centred throughout rather than drifting mid-shrink.
       const left = (vw - naturalWidth * scale) / 2;
       const top = padTop + (end.titleTop - padTop) * t;
-      title.style.transform = `translate(${left - padX}px, ${top - padTop}px) scale(${scale})`;
+      title.style.transform = `translate(${left - padX}px, ${top}px) scale(${scale})`;
 
-      const lines = mobile ? 2 : 1;
-      const titleHeight = BASE_FONT * LINE_HEIGHT * heroScale * lines;
+      const titleHeight = mobile
+        ? mobileTitleHeight(vw)
+        : BASE_FONT * LINE_HEIGHT * heroScale;
 
       // Tagline holds the top on mobile and only tightens up; on desktop it
       // travels down from under the wordmark into the header row.
@@ -130,7 +133,8 @@ export function Brand() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
       {/* pt matches MOBILE_TITLE_TOP / the desktop padTop above. */}
-      <div className="px-4 pt-[64px] md:px-10 md:pt-8">
+      {/* No top padding: the wordmark's y is carried entirely by transform. */}
+      <div className="px-4 md:px-10">
         {/* Stacked and centred on mobile, one line from `md` up. Measuring
             scrollWidth gives the widest line either way. */}
         <h1

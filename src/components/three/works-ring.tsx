@@ -12,6 +12,7 @@ import {
   learnMoreTexture,
 } from "@/components/three/caption-texture";
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
+import { mobileBandCentre } from "@/lib/hero-layout";
 import { openWork } from "@/lib/work-overlay";
 import {
   activeRing,
@@ -211,8 +212,14 @@ function WorkPlane({
       THREE.MathUtils.lerp(cfg.cardWidthRing, cfg.cardWidthLine, e) *
       sizeVary *
       hoverScale;
+    // Coiled, the band is placed as part of the hero group so it stays
+    // centred with the text whatever the screen height; the resolved line
+    // has the whole frame to itself and keeps its configured offset.
+    const coiledY = isMobileRing()
+      ? mobileBandCentre(vw, vh)
+      : vh * cfg.verticalOffset;
     const y =
-      vh * THREE.MathUtils.lerp(cfg.verticalOffset, cfg.verticalOffsetLine, e) +
+      THREE.MathUtils.lerp(coiledY, vh * cfg.verticalOffsetLine, e) +
       signedJitter(index, 2) * cfg.heightJitter * vh * jitter;
 
     // On a phone the Contact button is pinned over the strip, and a tall
