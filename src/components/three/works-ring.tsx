@@ -18,7 +18,6 @@ import {
   attachSwipe,
   resetSwipe,
   setSwipeEnabled,
-  setSwipeRange,
   swipeIsDragging,
 } from "@/lib/strip-swipe";
 import { openWork } from "@/lib/work-overlay";
@@ -223,7 +222,6 @@ function WorkPlane({
     // as a fight with the page. Scrolling down simply carries on down.
     let scrolled: number;
     if (isMobileRing()) {
-      setSwipeRange(-(ringSetSize - 1) * spacing, 0);
       setSwipeEnabled(e > 0.99);
       if (e < 0.05) resetSwipe();
       scrolled = -drift * e + advanceSwipe(delta);

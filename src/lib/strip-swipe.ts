@@ -10,22 +10,30 @@
  * few pixels of movement, so a vertical swipe still scrolls normally.
  */
 
-/** How far along the strip we are, in world pixels. Negative goes onward. */
-let offset = 0;
+/**
+ * How far along the strip we are, in world pixels. Unbounded: the band is a
+ * loop, so it can be pulled either way for as long as you like and the cards
+ * come round again.
+ *
+ * `target` is where the gesture has put it; `shown` trails behind on a
+ * spring so both the drag and the glide read as weight rather than as the
+ * strip snapping to the finger.
+ */
+let target = 0;
+let shown = 0;
 let velocity = 0;
 let dragging = false;
 /** Set to true by a drag that actually moved, so it is not read as a tap. */
 let moved = false;
 
-let min = 0;
-let max = 0;
 /** Gate: the strip is only draggable once it has flattened out. */
 let enabled = false;
 
-export function setSwipeRange(lo: number, hi: number) {
-  min = lo;
-  max = hi;
-}
+/** Share of the gap to the target left uncovered each second. Lower follows
+ *  the finger more tightly; higher trails further behind. */
+const FOLLOW = 0.0001;
+/** Share of the throw left after a second of gliding. */
+const GLIDE = 0.12;
 
 export function setSwipeEnabled(value: boolean) {
   enabled = value;
@@ -43,26 +51,20 @@ export function swipeIsDragging() {
 /** Advances the glide and returns where the strip has got to. */
 export function advanceSwipe(delta: number) {
   if (!dragging && velocity !== 0) {
-    offset += velocity * delta;
-    // Frame-rate independent decay, so the glide feels the same at 60 and
-    // 120Hz rather than dying sooner on a faster screen.
-    velocity *= Math.pow(0.0025, delta);
-    if (Math.abs(velocity) < 2) velocity = 0;
+    target += velocity * delta;
+    // Raised to the elapsed time, so the glide lasts the same wall-clock
+    // time at 60Hz and 120Hz rather than dying sooner on a faster screen.
+    velocity *= Math.pow(GLIDE, delta);
+    if (Math.abs(velocity) < 1) velocity = 0;
   }
-  if (offset < min) {
-    offset = min;
-    velocity = 0;
-  }
-  if (offset > max) {
-    offset = max;
-    velocity = 0;
-  }
-  return offset;
+  shown += (target - shown) * (1 - Math.pow(FOLLOW, delta));
+  return shown;
 }
 
 /** Puts the strip back to the start, for when the band coils up again. */
 export function resetSwipe() {
-  offset = 0;
+  target = 0;
+  shown = 0;
   velocity = 0;
   moved = false;
 }
@@ -108,7 +110,7 @@ export function attachSwipe(el: HTMLElement) {
     if (axis !== "x") return;
 
     const dx = event.clientX - lastX;
-    offset += dx;
+    target += dx;
 
     // Coarse or coalesced pointer streams can report two samples at the same
     // instant; a floor on the interval keeps that from dividing into a fling.
