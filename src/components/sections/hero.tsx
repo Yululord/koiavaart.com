@@ -48,17 +48,16 @@ export function Hero() {
       <div id={RING_RUNWAY_ID} className="h-[420vh]" />
       <div
         ref={captionsRef}
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex flex-col items-stretch px-6 sm:h-24 sm:flex-row sm:items-center sm:justify-between sm:px-10"
+        // Desktop only. The mobile design has nothing down here but the
+        // Contact button — its categories sit under the wordmark instead,
+        // in <Brand />.
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 hidden h-24 items-center justify-between px-10 md:flex"
       >
-        {/* The mobile design drops the copyright and puts the categories on
-            their own row above the Contact button, spread edge to edge. */}
-        <p className="hidden font-body text-sm text-muted sm:block">
-          {site.copyright}
-        </p>
-        <p className="flex justify-between pb-28 font-body text-sm text-muted sm:block sm:pb-0">
+        <p className="font-body text-sm text-muted">{site.copyright}</p>
+        <p className="font-body text-sm text-muted">
           {site.categories.map((category, i) => (
-            <span key={category} className="contents sm:inline">
-              {i > 0 && <span className="sm:inline"> · </span>}
+            <span key={category}>
+              {i > 0 && <span> · </span>}
               <span>{category}</span>
             </span>
           ))}

@@ -141,8 +141,11 @@ export const mobileRing: RingConfig = {
   lineSpacing: 0.68,
   cardWidthLine: 0.6,
 
-  verticalOffset: -0.02,
-  verticalOffsetLine: 0,
+  // Mobile stacks tagline, wordmark and categories above the band, so the
+  // ring sits well below centre to clear them. It rises a little as it
+  // unwinds, by which point that text has collapsed into the header.
+  verticalOffset: -0.17,
+  verticalOffsetLine: -0.1,
 
   tiltX: 0.17,
   tiltZ: 0,
@@ -177,9 +180,9 @@ export function activeRing(): RingConfig {
 }
 
 /**
- * Ranges for the tuning panel: [min, max, step]. The panel itself is
- * currently removed — these, `setRingConfig` and `ringSpacingActual` are
- * kept so it can be dropped back in without rebuilding the plumbing.
+ * Ranges for the tuning panel: [min, max, step]. The panel is behind
+ * `?tune` and edits whichever set the current viewport is using, so the
+ * desktop and mobile rings are dialled in independently.
  */
 export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]> = {
   radiusFactor: [0.15, 1.2, 0.01],
