@@ -174,13 +174,11 @@ export const mobileRing: RingConfig = {
   stripTravel: -1.3,
   pointerPush: 0,
   pointerTilt: 0,
-  // Late, because the runway is short and the unwrap is all it has to do:
-  // the strip is browsed by dragging once it has opened.
+  // Unused on mobile: the band never unwraps there.
   unwindEnd: 0.8,
-  // Dissolves as soon as it has opened. The horizontal strip is gone on
-  // mobile — the grid below is the gallery — so the cylinder's job is the
-  // unwrap and then getting out of the way.
-  fadeStart: 0.82,
+  // Starts dissolving almost immediately. The cylinder turns, the wordmark
+  // rises into the header, the scene fades, and the grid arrives over it.
+  fadeStart: 0.2,
 
   fov: 66,
   hoverScale: 1,

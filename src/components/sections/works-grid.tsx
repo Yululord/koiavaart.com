@@ -25,8 +25,10 @@ export function WorksGrid() {
   if (!works.length) return null;
 
   return (
+    // Geometry from the Mobile 5 frame: 16px inset, two columns with a 12px
+    // gutter and 16px between rows.
     <section className="relative z-20 bg-white px-4 pb-28 pt-10 md:hidden">
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 gap-x-3 gap-y-4">
         {works.map((work) => (
           <li key={work.id}>
             <button
@@ -38,8 +40,10 @@ export function WorksGrid() {
                   3000px across, and letting the image size itself blew
                   straight through the tile. The inset gives the painting
                   room to breathe inside its square. */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
-                <div className="absolute inset-3">
+              {/* 174.5 x 215 in the frame, with the painting inset about an
+                  eighth of the tile on each side. */}
+              <div className="relative aspect-[174.5/215] overflow-hidden bg-neutral-100">
+                <div className="absolute inset-x-[12.6%] inset-y-[12.1%]">
                   <Image
                     src={work.src}
                     alt={work.title ?? "Painting"}
@@ -49,7 +53,7 @@ export function WorksGrid() {
                   />
                 </div>
               </div>
-              <p className="mt-3 text-center font-body text-base font-medium leading-tight text-ink">
+              <p className="mt-2 text-center font-body text-base font-medium leading-tight text-ink">
                 {work.title}
               </p>
               <p className="mt-1 text-center font-body text-xs text-muted">

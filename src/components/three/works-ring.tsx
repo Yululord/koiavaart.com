@@ -86,8 +86,15 @@ function wrapSigned(value: number, span: number) {
   return ((((value + half) % span) + span) % span) - half;
 }
 
-/** 0 while coiled, 1 once the circle has opened into a straight line. */
+/**
+ * 0 while coiled, 1 once the circle has opened into a straight line.
+ *
+ * Mobile never unwraps: the cylinder stays a cylinder and fades out, and the
+ * grid below is the gallery. A line on a phone only ever showed one painting
+ * at a time and needed a sideways gesture to get through the rest.
+ */
 function unwindAmount(p: number) {
+  if (isMobileRing()) return 0;
   return THREE.MathUtils.smoothstep(
     THREE.MathUtils.clamp(p / activeRing().unwindEnd, 0, 1),
     0,

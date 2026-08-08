@@ -45,9 +45,10 @@ export function Hero() {
 
   return (
     <>
-      {/* Mobile only needs enough runway to unwrap the cylinder — the strip
-          is browsed by dragging it, not by scrolling further. */}
-      <div id={RING_RUNWAY_ID} className="h-[200vh] md:h-[420vh]" />
+      {/* Mobile only needs enough runway for the wordmark to reach the
+          header and the scene to fade; the grid follows it. Desktop still
+          has the whole unwrap and the strip's travel to play out. */}
+      <div id={RING_RUNWAY_ID} className="h-[150vh] md:h-[420vh]" />
       <div
         ref={captionsRef}
         // Desktop only. The mobile design has nothing down here but the
