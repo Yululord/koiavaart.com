@@ -62,12 +62,33 @@ const WORKS = groq`
     }
 `;
 
+/**
+ * Width the hero asks Sanity for, in pixels.
+ *
+ * The ring draws every painting as a WebGL texture, and a texture costs
+ * width x height x 4 bytes of GPU memory whatever it is displayed at. Her
+ * originals are 3000-5600px: seventeen of those is over 800MB, which iOS
+ * Safari answers by killing the context — the scene simply vanishes while
+ * the rest of the page carries on.
+ *
+ * A card is at most ~270 CSS px, so 800 is generous even at three times the
+ * pixel density, and brings the whole ring under 60MB. The detail view is
+ * unaffected: it reads `images` and goes through next/image, which does its
+ * own resizing.
+ */
+const TEXTURE_WIDTH = 800;
+
 export async function getWorks() {
-  return sanityClient.fetch<SanityWork[]>(
+  const works = await sanityClient.fetch<SanityWork[]>(
     WORKS,
     {},
     { next: { revalidate: 60, tags: ["work"] } },
   );
+
+  return works.map((work) => ({
+    ...work,
+    src: `${work.src}?w=${TEXTURE_WIDTH}&auto=format&q=75`,
+  }));
 }
 
 export type SanityAbout = {
