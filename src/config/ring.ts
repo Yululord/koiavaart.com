@@ -158,6 +158,11 @@ export const mobileRing: RingConfig = {
   verticalOffsetLine: 0.015,
 
   tiltX: 0.17,
+  // A steep roll here turns the band into a near-vertical column, which
+  // suits the grid below it — the cards stay upright now that they counter
+  // the roll. Left flat until the placement follows: the layout still
+  // assumes a horizontal ring, so a tilted one overlaps the wordmark and
+  // runs off the right edge.
   tiltZ: 0,
   cardRoll: 0,
   heightJitter: 0.06,

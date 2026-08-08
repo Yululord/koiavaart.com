@@ -327,7 +327,14 @@ function WorkPlane({
     // The group carries placement; the meshes keep their own scales, so the
     // caption is not stretched by the artwork's aspect.
     group.position.set(x, y, z);
-    group.rotation.set(0, phi, signedJitter(index, 3) * cfg.cardRoll * jitter);
+    // Counter the whole band's roll so the paintings stay upright while
+    // their positions follow the tilted ring. Without this a near-vertical
+    // cylinder reads as a fan of rotated cards rather than a column.
+    group.rotation.set(
+      0,
+      phi,
+      signedJitter(index, 3) * cfg.cardRoll * jitter - cfg.tiltZ * (1 - e),
+    );
     mesh.scale.set(cardW, cardH, 1);
     // Nearer cards draw last so they sit on top of the hazy far side.
     mesh.renderOrder = Math.round(z);
