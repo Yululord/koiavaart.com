@@ -339,7 +339,12 @@ function WorkPlane({
     // At 1 the strip never fades — it scrolls away bodily instead, which is
     // the default. Lower it to dissolve the band before the runway ends.
     if (cfg.fadeStart < 1 && p > cfg.fadeStart) {
-      opacity *= 1 - THREE.MathUtils.smoothstep(p, cfg.fadeStart, 1);
+      // Mobile fades over a fixed window instead of the whole remaining
+      // runway: spread across everything left, the scene lingered long
+      // after the wordmark had settled into the header. Ending near where
+      // the morph does makes the two read as one movement.
+      const fadeEnd = isMobileRing() ? Math.min(1, cfg.fadeStart + 0.3) : 1;
+      opacity *= 1 - THREE.MathUtils.smoothstep(p, cfg.fadeStart, fadeEnd);
     }
     material.opacity = opacity;
     mesh.visible = opacity > 0.01;
