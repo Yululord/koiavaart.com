@@ -15,7 +15,7 @@ export type SocialHandle = { handle: string; href?: string };
 
 export const contact = {
   note: "For inquiries, commissions, and collaborations.",
-  email: "her@email.com",
+  email: "koiavavaleriia@gmail.com",
   socials: [
     { label: "Instagram", handles: [{ handle: "@koiavalera" }] },
     { label: "Photography", handles: [{ handle: "@koiava_photography" }] },
