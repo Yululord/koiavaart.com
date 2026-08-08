@@ -67,8 +67,13 @@ export function mobileTextHeight(vw: number) {
 }
 
 /** Mean aspect of the works, standing in for a typical card. */
-export const meanAspect =
-  works.reduce((sum, work) => sum + work.width / work.height, 0) / works.length;
+export function meanAspect() {
+  if (!works.length) return 0.75;
+  return (
+    works.reduce((sum, work) => sum + work.width / work.height, 0) /
+    works.length
+  );
+}
 
 /**
  * Visual extent of the coiled band: a typical card, plus roughly the spread
@@ -79,7 +84,7 @@ export const meanAspect =
  */
 export function mobileBandHeight(vw: number, vh: number) {
   const cfg = activeRing();
-  return (vw * cfg.cardWidthRing) / meanAspect + cfg.heightJitter * vh;
+  return (vw * cfg.cardWidthRing) / meanAspect() + cfg.heightJitter * vh;
 }
 
 /**

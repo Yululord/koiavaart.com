@@ -3,7 +3,15 @@
 import Image from "next/image";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useLenis } from "lenis/react";
-import { buyLink, findWork, workCaption, works } from "@/data/works";
+import {
+  buyLink,
+  findWork,
+  subscribeWorks,
+  workCaption,
+  works,
+  worksVersion,
+} from "@/data/works";
+import { formatPrice } from "@/lib/format";
 import {
   closeWork,
   openWorkServerSnapshot,
@@ -55,6 +63,10 @@ function Arrow({
  * shared, and closed with Escape, the button, or the browser's back.
  */
 export function WorkDetail() {
+  // Rebuild when the paintings arrive, so prev/next and the counter are
+  // right rather than reflecting an empty list.
+  useSyncExternalStore(subscribeWorks, worksVersion, () => 0);
+
   const slug = useSyncExternalStore(
     subscribeOpenWork,
     openWorkSnapshot,
@@ -165,7 +177,7 @@ export function WorkDetail() {
           {work.price && (
             <div className="mt-2 flex items-center gap-4">
               <span className="font-display text-2xl leading-none text-ink">
-                {work.price}
+                {formatPrice(work.price)}
               </span>
               <a
                 href={buyLink(work)}

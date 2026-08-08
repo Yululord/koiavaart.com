@@ -1,5 +1,10 @@
-// Valeriia's paintings — the images that ride the hero ring and unwind
-// into the horizontal band. Shaped to map onto Sanity documents later.
+// Valeriia's paintings. Filled from Sanity at runtime by <WorksData />,
+// which the server page renders with the result of the query.
+//
+// A module-level store rather than props: the ring reads the list from deep
+// inside the WebGL tree and derives its geometry from the count, so passing
+// it down would mean threading it through every layer of a scene graph that
+// is otherwise self-contained. Same pattern as the ring config next door.
 
 export type Work = {
   id: string;
@@ -8,11 +13,16 @@ export type Work = {
   src: string;
   width: number;
   height: number;
+  /** Every photograph, the first being `src`. */
+  images?: { src: string; width: number; height: number }[];
   title?: string;
   medium?: string;
   dimensions?: string;
   description?: string;
-  price?: string;
+  /** Euros. Rendered by formatPrice so every painting reads alike. */
+  price?: number;
+  year?: number;
+  status?: "available" | "sold";
   /** Saatchi listing for this painting. Falls back to the artist profile. */
   buyUrl?: string;
 };
@@ -21,49 +31,29 @@ export type Work = {
 export const SAATCHI_PROFILE =
   "https://www.saatchiart.com/account/profile/2604565";
 
-/**
- * PLACEHOLDER copy. Titles read "Untitled" because we genuinely do not know
- * them yet; medium, size and description are the one example from the Figma
- * file, identical across every painting so they cannot be taken for real
- * data. Replace per work — a field left unset simply is not shown.
- */
-const PLACEHOLDER_MEDIUM = "Oil on Canvas";
-const PLACEHOLDER_SIZE = "31.5 x 31.5 in";
-/**
- * PLACEHOLDER price — identical on every painting on purpose, so it cannot
- * be mistaken for a real figure. Prices are commercially sensitive: set
- * these per work from the artist before this goes anywhere public.
- */
-const PLACEHOLDER_PRICE = "$1,200";
-const PLACEHOLDER_DESCRIPTION =
-  "Built slowly, in layers, until the image feels alive rather than finished. " +
-  "The painting holds still something that usually passes too quickly — a gaze, " +
-  "a bloom, a quiet distance between two people.";
+/** Mutated in place so existing imports keep pointing at the live list. */
+export const works: Work[] = [];
 
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+const listeners = new Set<() => void>();
 
-export const works: Work[] = [
-  { id: "w01", src: "/images/works/work-01.png", width: 1080, height: 1350 },
-  { id: "w02", src: "/images/works/work-02.png", width: 1080, height: 1350 },
-  { id: "w03", src: "/images/works/work-03.png", width: 1080, height: 1350 },
-  { id: "w04", src: "/images/works/work-04.png", width: 1080, height: 1439 },
-  { id: "w05", src: "/images/works/work-05.png", width: 1080, height: 1302 },
-  { id: "w06", src: "/images/works/work-06.png", width: 1080, height: 1440 },
-  { id: "w07", src: "/images/works/work-07.png", width: 812, height: 1096 },
-  { id: "w08", src: "/images/works/work-08.png", width: 800, height: 1080 },
-  { id: "w09", src: "/images/works/work-09.png", width: 476, height: 970 },
-].map((work, i) => {
-  const title = `Untitled ${ROMAN[i]}`;
-  return {
-    ...work,
-    title,
-    slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
-    medium: PLACEHOLDER_MEDIUM,
-    dimensions: PLACEHOLDER_SIZE,
-    description: PLACEHOLDER_DESCRIPTION,
-    price: PLACEHOLDER_PRICE,
-  };
-});
+export function setWorks(next: Work[]) {
+  if (next.length === works.length && next.every((w, i) => w.id === works[i]?.id)) {
+    return;
+  }
+  works.length = 0;
+  works.push(...next);
+  listeners.forEach((notify) => notify());
+}
+
+export function subscribeWorks(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/** Identity of the current list, for useSyncExternalStore. */
+export function worksVersion() {
+  return works.length;
+}
 
 /** A painting's own listing once it has one, the profile until then. */
 export function buyLink(work: Work) {
@@ -74,7 +64,7 @@ export function findWork(slug: string | null) {
   return slug ? (works.find((work) => work.slug === slug) ?? null) : null;
 }
 
-/** The line "Oil on Canvas • 31.5 x 31.5 in", or empty if neither is set. */
+/** The line "Oil on canvas • 40 × 50 cm", or empty if neither is set. */
 export function workCaption({ medium, dimensions }: Work) {
   return [medium, dimensions].filter(Boolean).join(" • ");
 }
@@ -90,6 +80,7 @@ export function workCaption({ medium, dimensions }: Work) {
  * straight through cannot do that.
  */
 export function buildRingSlots(total: number) {
+  if (!works.length) return [];
   return Array.from({ length: Math.max(1, Math.round(total)) }, (_, i) => ({
     ...works[i % works.length],
     slot: i,

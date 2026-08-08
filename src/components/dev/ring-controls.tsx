@@ -157,7 +157,7 @@ export function RingControls() {
             <div className="flex justify-between">
               <span className="text-white/60">Cards on ring</span>
               <span>
-                {ringTotalCount()} ({ringCopies()} × {ringSetSize})
+                {ringTotalCount()} ({ringCopies()} × {ringSetSize()})
               </span>
             </div>
             <div className="flex justify-between">

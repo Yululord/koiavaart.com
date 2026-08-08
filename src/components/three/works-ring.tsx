@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { buildRingSlots, workCaption } from "@/data/works";
+import { buildRingSlots, subscribeWorks, workCaption, worksVersion } from "@/data/works";
 import {
   BUTTON_ASPECT,
   LABEL_ASPECT,
@@ -30,7 +30,11 @@ import {
   subscribeRingConfig,
 } from "@/config/ring";
 
+// Anonymous CORS: the paintings come from Sanity's CDN, and WebGL refuses to
+// sample a cross-origin image unless it was fetched with permission. Sanity
+// returns the header for our domain, so no proxy is needed.
 const textureLoader = new THREE.TextureLoader();
+textureLoader.setCrossOrigin("anonymous");
 
 /**
  * Top edge of the Contact button, in px up from the bottom of the viewport:
@@ -193,7 +197,7 @@ function WorkPlane({
     // Motion is measured in passes through the set of works rather than
     // laps of the whole band, so the speed controls keep their meaning
     // however many copies are wrapped around the ring.
-    const perPass = spacing * ringSetSize;
+    const perPass = spacing * ringSetSize();
 
     // Arc-length position of this card along the band. Idle drift, scroll
     // and pointer parallax are all shifts along the arc, so cards always
@@ -274,7 +278,7 @@ function WorkPlane({
     // the page. Splitting the difference between matching widths and
     // matching heights evens out the area they cover, while the aspect stays
     // exactly as painted.
-    const evenArea = isMobileRing() ? Math.sqrt(aspect / meanAspect) : 1;
+    const evenArea = isMobileRing() ? Math.sqrt(aspect / meanAspect()) : 1;
     const fullW =
       vw *
       THREE.MathUtils.lerp(cfg.cardWidthRing, cfg.cardWidthLine, e) *
@@ -437,8 +441,19 @@ function WorkPlane({
 
 function Ring() {
   const groupRef = useRef<THREE.Group>(null!);
-  const total = useConfigValue(ringTotalCount);
-  const slots = useMemo(() => buildRingSlots(total), [total]);
+  // Subscribed to both stores: the card count depends on the ring config
+  // *and* on how many paintings there are, and the paintings arrive after
+  // this mounts. Watching only the config left the ring sized for an empty
+  // gallery and it never recovered.
+  const count = useSyncExternalStore(subscribeWorks, worksVersion, () => 0);
+  const configTotal = useConfigValue(ringTotalCount);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const total = useMemo(() => ringTotalCount(), [configTotal, count]);
+  // `count` is not read inside, but it is what changes when the paintings
+  // arrive — buildRingSlots reads the module store, so the memo has to be
+  // invalidated by hand.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const slots = useMemo(() => buildRingSlots(total), [total, count]);
 
   useFrame((_, delta) => {
     const group = groupRef.current;

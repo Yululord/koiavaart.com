@@ -90,7 +90,10 @@ export type RingConfig = {
  */
 export const desktopRing: RingConfig = {
   radiusFactor: 0.68,
-  copies: 3,
+  // One pass through the works. This was 3 when there were nine paintings
+  // and the ring looked bare; seventeen fills it without repeating, and a
+  // repeat is visible as soon as the band unrolls into a line.
+  copies: 1,
   cardWidthRing: 0.092,
 
   lineSpacing: 0.302,
@@ -228,10 +231,15 @@ export const ringConfigRanges: Record<keyof RingConfig, [number, number, number]
 
 import { works as workList } from "@/data/works";
 
-const workCount = workList.length;
-
-/** Number of works — one full pass through the set. */
-export const ringSetSize = workCount;
+/**
+ * Number of works — one full pass through the set. A function, not a
+ * constant: the list arrives from Sanity after this module loads, and
+ * freezing it at startup would leave the ring sized for an empty gallery
+ * and, later, ignore every painting she adds.
+ */
+export function ringSetSize() {
+  return Math.max(1, workList.length);
+}
 
 /** How many complete sets go around the ring. */
 export function ringCopies() {
@@ -243,7 +251,7 @@ export function ringCopies() {
  * keeps the clones evenly spread and lets the circle close seamlessly.
  */
 export function ringTotalCount() {
-  return workCount * ringCopies();
+  return ringSetSize() * ringCopies();
 }
 
 /**
