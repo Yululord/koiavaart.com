@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLenis } from "lenis/react";
 import {
-  buyLink,
   findWork,
   subscribeWorks,
   workCaption,
@@ -12,6 +11,7 @@ import {
   worksVersion,
 } from "@/data/works";
 import { formatPrice } from "@/lib/format";
+import { paintingMailto } from "@/lib/mailto";
 import {
   closeWork,
   openWorkServerSnapshot,
@@ -218,20 +218,26 @@ export function WorkDetail() {
             </p>
           )}
 
-          {work.price && (
-            <div className="mt-2 flex items-center gap-4">
-              <span className="font-display text-2xl leading-none text-ink">
-                {formatPrice(work.price)}
+          {work.status === "sold" ? (
+            <div className="mt-2">
+              <span className="inline-flex h-8 items-center rounded-full bg-ink px-4 font-body text-sm text-white">
+                Sold
               </span>
-              <a
-                href={buyLink(work)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 font-body text-base text-white transition-opacity hover:opacity-80"
-              >
-                Buy
-              </a>
             </div>
+          ) : (
+            work.price && (
+              <div className="mt-2 flex items-center gap-4">
+                <span className="font-display text-2xl leading-none text-ink">
+                  {formatPrice(work.price)}
+                </span>
+                <a
+                  href={paintingMailto(work)}
+                  className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 font-body text-base text-white transition-opacity hover:opacity-80"
+                >
+                  Buy
+                </a>
+              </div>
+            )
           )}
 
           <p className="mt-2 font-body text-xs text-muted">

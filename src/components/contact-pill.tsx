@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { contact } from "@/data/site";
+import { contactMailto } from "@/lib/mailto";
 
 /**
  * Always-visible mail button, pinned to the centre of the footer row.
@@ -43,7 +43,7 @@ export function ContactPill() {
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex h-24 items-center justify-center">
       <a
         ref={pillRef}
-        href={`mailto:${contact.email}`}
+        href={contactMailto()}
         className="pointer-events-auto inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-black px-6 font-body text-base text-white transition-opacity hover:opacity-80"
       >
         Contact
