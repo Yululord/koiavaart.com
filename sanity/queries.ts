@@ -12,34 +12,53 @@ import { sanityClient } from "./client";
  * without it every card would start square and jump once the image arrived.
  */
 
+export type WorkImage = { src: string; width: number; height: number };
+
 export type SanityWork = {
   id: string;
   slug: string;
+  /** The first image — what the gallery shows. */
   src: string;
   width: number;
   height: number;
+  /** Every image, first included, for stepping through on the detail view. */
+  images: WorkImage[];
   title: string;
   medium?: string;
   dimensions?: string;
   description?: string;
   price?: string;
+  year?: number;
+  available?: boolean;
   buyUrl?: string;
 };
 
+/**
+ * Only paintings with at least one image: a record can exist before its
+ * photograph does, and the gallery has nothing to show for one until then.
+ */
 const WORKS = groq`
-  *[_type == "work" && defined(image.asset)] | order(coalesce(order, 9999) asc, _createdAt asc) {
-    "id": _id,
-    "slug": slug.current,
-    "src": image.asset->url,
-    "width": image.asset->metadata.dimensions.width,
-    "height": image.asset->metadata.dimensions.height,
-    title,
-    medium,
-    dimensions,
-    description,
-    price,
-    buyUrl
-  }
+  *[_type == "work" && count(images[defined(asset)]) > 0]
+    | order(coalesce(order, 9999) asc, _createdAt asc) {
+      "id": _id,
+      "slug": slug.current,
+      "src": images[0].asset->url,
+      "width": images[0].asset->metadata.dimensions.width,
+      "height": images[0].asset->metadata.dimensions.height,
+      "images": images[defined(asset)] {
+        "src": asset->url,
+        "width": asset->metadata.dimensions.width,
+        "height": asset->metadata.dimensions.height
+      },
+      title,
+      medium,
+      dimensions,
+      description,
+      price,
+      year,
+      available,
+      buyUrl
+    }
 `;
 
 export async function getWorks() {

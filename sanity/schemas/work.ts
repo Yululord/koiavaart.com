@@ -30,13 +30,13 @@ export const work = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: "image",
-      title: "Image",
-      type: "image",
+      name: "images",
+      title: "Images",
+      type: "array",
+      of: [{ type: "image", options: { hotspot: true } }],
       description:
-        "The painting itself. Upload the largest version you have — it is resized automatically.",
-      options: { hotspot: true },
-      validation: (rule) => rule.required(),
+        "The first is the one the gallery shows; drag to reorder. Add more — a detail, the work framed or on a wall — and they can be stepped through on the painting's own page. Upload the largest versions you have; they are resized automatically.",
+      options: { layout: "grid" },
     }),
     defineField({
       name: "order",
@@ -100,6 +100,6 @@ export const work = defineType({
     },
   ],
   preview: {
-    select: { title: "title", subtitle: "medium", media: "image" },
+    select: { title: "title", subtitle: "medium", media: "images.0" },
   },
 });
