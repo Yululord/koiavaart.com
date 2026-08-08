@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSyncExternalStore } from "react";
 import { subscribeWorks, works, worksVersion } from "@/data/works";
+import { formatPrice } from "@/lib/format";
 import { openWork } from "@/lib/work-overlay";
 
 /**
@@ -37,7 +38,7 @@ export function WorksGrid() {
                   3000px across, and letting the image size itself blew
                   straight through the tile. The inset gives the painting
                   room to breathe inside its square. */}
-              <div className="relative aspect-square overflow-hidden bg-neutral-100">
+              <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
                 <div className="absolute inset-3">
                   <Image
                     src={work.src}
@@ -48,14 +49,16 @@ export function WorksGrid() {
                   />
                 </div>
               </div>
-              <p className="mt-2 font-body text-sm leading-tight text-ink">
+              <p className="mt-3 text-center font-body text-base font-medium leading-tight text-ink">
                 {work.title}
               </p>
-              {work.status === "sold" ? (
-                <span className="mt-1 inline-flex items-center rounded-full bg-ink px-2 py-0.5 font-body text-[11px] text-white">
-                  Sold
-                </span>
-              ) : null}
+              <p className="mt-1 text-center font-body text-xs text-muted">
+                {work.status === "sold"
+                  ? "Sold"
+                  : [work.dimensions, work.price ? formatPrice(work.price) : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+              </p>
             </button>
           </li>
         ))}

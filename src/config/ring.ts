@@ -177,7 +177,10 @@ export const mobileRing: RingConfig = {
   // Late, because the runway is short and the unwrap is all it has to do:
   // the strip is browsed by dragging once it has opened.
   unwindEnd: 0.8,
-  fadeStart: 1,
+  // Dissolves as soon as it has opened. The horizontal strip is gone on
+  // mobile — the grid below is the gallery — so the cylinder's job is the
+  // unwrap and then getting out of the way.
+  fadeStart: 0.82,
 
   fov: 66,
   hoverScale: 1,

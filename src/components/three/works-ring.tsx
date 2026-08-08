@@ -14,7 +14,6 @@ import {
 import { ringScrollOverflow, ringScrollProgress } from "@/lib/scroll-progress";
 import { meanAspect, mobileBandCentre } from "@/lib/hero-layout";
 import {
-  advanceSwipe,
   attachSwipe,
   resetSwipe,
   setSwipeEnabled,
@@ -227,9 +226,12 @@ function WorkPlane({
     // no longer needs fixing.
     let scrolled: number;
     if (isMobileRing()) {
-      setSwipeEnabled(e > 0.99);
-      if (e < 0.05) resetSwipe();
-      scrolled = advanceSwipe(state.clock.elapsedTime);
+      // No sideways travel at all: the band unwraps, dissolves, and the grid
+      // takes over. Dragging a strip competed with the page's own scrolling
+      // and hid most of the work behind a gesture nobody was told about.
+      setSwipeEnabled(false);
+      resetSwipe();
+      scrolled = 0;
     } else {
       scrolled = after * perPass * cfg.stripTravel;
     }
