@@ -16,7 +16,11 @@ export function SiteHeader() {
       const bar = barRef.current;
       if (bar) {
         const p = ringScrollProgress();
-        const t = Math.max(0, Math.min(1, (p - 0.18) / 0.14));
+        // Mobile's morph runs long, so the bar arrives late to match; on
+        // desktop the name is home by 0.3 and the bar meets it there.
+        const mobile = window.innerWidth < 768;
+        const start = mobile ? 0.5 : 0.18;
+        const t = Math.max(0, Math.min(1, (p - start) / 0.14));
         bar.style.opacity = String(t);
       }
       frame = requestAnimationFrame(tick);

@@ -48,7 +48,7 @@ export function Hero() {
       {/* Mobile only needs enough runway for the wordmark to reach the
           header and the scene to fade; the grid follows it. Desktop still
           has the whole unwrap and the strip's travel to play out. */}
-      <div id={RING_RUNWAY_ID} className="h-[150vh] md:h-[420vh]" />
+      <div id={RING_RUNWAY_ID} className="h-[125vh] md:h-[420vh]" />
       <div
         ref={captionsRef}
         // Desktop only. The mobile design has nothing down here but the
