@@ -58,11 +58,25 @@ export const work = defineType({
       description: 'For example "31.5 x 31.5 in".',
     }),
     defineField({
+      name: "year",
+      title: "Year",
+      type: "number",
+      description: "The year the painting was made.",
+    }),
+    defineField({
       name: "price",
       title: "Price",
       type: "string",
       description:
-        'Shown as written, so include the currency — for example "$1,200". Leave empty to hide the price and the Buy button.',
+        'Shown as written, so include the currency — for example "1600 €". Leave empty to hide the price and the Buy button.',
+    }),
+    defineField({
+      name: "available",
+      title: "Available",
+      type: "boolean",
+      description:
+        "Turn off once a painting is sold. Sold work still shows, without a price or Buy button.",
+      initialValue: true,
     }),
     defineField({
       name: "description",
