@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLenis } from "lenis/react";
 import {
   buyLink,
@@ -73,6 +73,15 @@ export function WorkDetail() {
     openWorkServerSnapshot,
   );
   const work = findWork(slug);
+  const [shot, setShot] = useState(0);
+  // Back to the primary photograph whenever a different painting opens, or
+  // the second shot of one carries over to the next. Adjusted during render
+  // rather than in an effect, which would paint the wrong image first.
+  const [shownFor, setShownFor] = useState(slug);
+  if (slug !== shownFor) {
+    setShownFor(slug);
+    setShot(0);
+  }
   const closeRef = useRef<HTMLButtonElement>(null);
   const restoreFocusTo = useRef<Element | null>(null);
   const lenis = useLenis();
@@ -115,6 +124,12 @@ export function WorkDetail() {
   if (!work) return null;
 
   const info = workCaption(work);
+  // Every photograph of this painting, falling back to the single primary
+  // one for anything imported before the field existed.
+  const shots = work.images?.length
+    ? work.images
+    : [{ src: work.src, width: work.width, height: work.height }];
+  const current = shots[Math.min(shot, shots.length - 1)];
 
   return (
     <div
@@ -129,7 +144,7 @@ export function WorkDetail() {
         type="button"
         onClick={closeWork}
         aria-label="Close"
-        className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-line bg-white text-ink transition-colors hover:bg-neutral-100 sm:right-8 sm:top-8"
+        className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-ink transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 sm:right-8 sm:top-8"
       >
         <svg
           width="18"
@@ -152,16 +167,45 @@ export function WorkDetail() {
       )}
 
       <div className="mx-auto flex min-h-full max-w-6xl flex-col items-center justify-center gap-10 px-16 py-20 sm:px-24 lg:flex-row lg:items-center lg:gap-16">
-        <Image
-          key={work.slug}
-          src={work.src}
-          alt={work.title ?? "Painting"}
-          width={work.width}
-          height={work.height}
-          sizes="(min-width: 1024px) 55vw, 90vw"
-          priority
-          className="max-h-[52vh] w-auto object-contain lg:max-h-[76vh]"
-        />
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            key={`${work.slug}-${shot}`}
+            src={current.src}
+            alt={work.title ?? "Painting"}
+            width={current.width}
+            height={current.height}
+            sizes="(min-width: 1024px) 55vw, 90vw"
+            priority
+            className="max-h-[52vh] w-auto object-contain lg:max-h-[76vh]"
+          />
+
+          {/* Only worth showing when there is a choice to make. */}
+          {shots.length > 1 && (
+            <div className="flex gap-3">
+              {shots.map((image, i) => (
+                <button
+                  key={image.src}
+                  type="button"
+                  onClick={() => setShot(i)}
+                  aria-label={`Photograph ${i + 1} of ${shots.length}`}
+                  aria-current={i === shot}
+                  className={`h-16 w-16 overflow-hidden rounded-sm transition-opacity ${
+                    i === shot ? "opacity-100" : "opacity-40 hover:opacity-70"
+                  }`}
+                >
+                  <Image
+                    src={image.src}
+                    alt=""
+                    width={image.width}
+                    height={image.height}
+                    sizes="64px"
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="flex w-full max-w-sm flex-col gap-4">
           <h2 className="font-display text-3xl uppercase leading-none text-ink sm:text-4xl">
