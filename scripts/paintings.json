@@ -1,5 +1,5 @@
 {
-  "_comment": "Transcribed from the Info.jpg sheets in ~/Downloads/Paintings, one entry per folder. Dimensions are as written on the sheet, in centimetres. Prices are euros as digits. `folder` is the source directory and `images` the photographs in it, first one primary. Incomplete: 10 of 17 read so far.",
+  "_comment": "Transcribed from the Info.jpg sheets in ~/Downloads/Paintings, one entry per folder. Dimensions are as written on the sheet, in centimetres. Prices are euros as digits. `folder` is the source directory and `images` the photographs in it, first one primary. All 17 sheets transcribed.",
   "paintings": [
     {
       "folder": "After Monet",
@@ -121,6 +121,104 @@
         "IMG_0589.JPG"
       ],
       "description": "Architecture has always fascinated me not only through its form, but through its ability to create an emotional space. Some interiors possess a remarkable quality - they seem to invite us to slow down, listen to the silence, and spend a quiet moment alone with ourselves.\n\nAfter discovering Dutch interior painting, I became particularly fascinated by the way artists transformed architecture into the true subject of their work. Their paintings were not so much about buildings as they were about light, air, and the very experience of space. While creating this painting, I wanted to continue that dialogue, preserving not the precision of architectural detail, but the inner sense of calm and contemplation that such places evoke."
+    },
+    {
+      "folder": "Reflections",
+      "title": "Reflections",
+      "year": 2026,
+      "dimensions": "30 × 24 cm",
+      "medium": "Oil on canvas",
+      "price": 700,
+      "status": "available",
+      "images": [
+        "IMG_1477.JPG",
+        "IMG_1478.JPG"
+      ],
+      "description": "I have always been fascinated by the way Claude Monet transformed familiar landscapes into studies of light, water, and time. His water lilies were never merely depictions of nature, but an attempt to capture the fleeting atmosphere of a passing moment.\n\nWhile creating this painting, I was not interested in recreating that image, but in continuing the conversation about contemplation. Here, the water becomes a space where reflections, leaves, and blossoms exist in constant dialogue with light, allowing the focus to shift from the subject itself to a quiet sense of stillness.\n\nTo me, this painting is about a kind of beauty that does not reveal itself immediately. It asks for time, silence, and a willingness to look closely."
+    },
+    {
+      "folder": "Ritual",
+      "title": "Ritual",
+      "year": 2026,
+      "dimensions": "30 × 40 cm",
+      "medium": "Oil on canvas",
+      "price": 800,
+      "status": "available",
+      "images": [
+        "IMG_1475.JPG",
+        "IMG_1476.JPG"
+      ],
+      "description": "Dutch still lifes taught me to see the poetry in ordinary things. Nothing in these paintings was accidental - every object became part of a story told through light, form, and texture.\n\nThis work is my dialogue with that tradition. I wanted familiar objects to become more than everyday items, transforming instead into a quiet space where even an ordinary cup of coffee becomes a reason to pause for a moment.\n\nI am drawn to the idea that beauty rarely asks for anything extraordinary. More often, it is already around us - we simply have to learn to notice it."
+    },
+    {
+      "folder": "Solitude",
+      "title": "Solitude",
+      "year": 2026,
+      "dimensions": "37 × 26,5 cm",
+      "medium": "Oil on canvas",
+      "price": 650,
+      "status": "available",
+      "images": [
+        "IMG_0555.JPG",
+        "IMG_0557.JPG"
+      ],
+      "description": "This work explores the beauty of silence and contemplation. The swan becomes more than the depiction of a bird - it emerges as a symbol of inner peace, dignity, and fragility. The surrounding darkness enhances the sense of solitude, which is not presented as absence or isolation, but as an opportunity to be alone with oneself. Soft light gliding across the white plumage emphasizes the contrast between outward stillness and the richness of one's inner world."
+    },
+    {
+      "folder": "Still Bloom",
+      "title": "Still Bloom",
+      "year": 2026,
+      "dimensions": "25 × 20 cm",
+      "medium": "Oil on canvas",
+      "price": 450,
+      "status": "available",
+      "images": [
+        "IMG_0565.JPG",
+        "IMG_0567.JPG"
+      ],
+      "description": "After discovering Dutch painting, I became particularly fascinated by the way its artists approached the ordinary. In their floral still lifes, the subject itself was never the focus; instead, it was a careful observation of light, form, and the ever-changing nature of the natural world.\n\nWith this painting, I wanted to continue that dialogue. A single flower, placed against a dark background, invites the viewer to focus on what matters most - its fragility, graceful form, and the subtle shifts of color.\n\nTo me, this painting is about a kind of beauty that reveals itself only when we are willing to slow down and look more closely."
+    },
+    {
+      "folder": "The Fragility of Being",
+      "title": "The Fragility of Being",
+      "year": 2025,
+      "dimensions": "40 × 50 cm",
+      "medium": "Oil on canvas",
+      "price": 1000,
+      "status": "available",
+      "images": [
+        "IMG_0550.JPG",
+        "IMG_0551.JPG"
+      ],
+      "description": "Inspired by the timeless elegance of Dutch floral masters and the dramatic lighting of the Baroque era, this piece explores the delicate balance between life and the void. I wanted to capture peonies not just as flowers, but as luminous entities emerging from the deep silence of a dark background.\n\nI hope viewers feel a sense of quiet contemplation and reverence for the fleeting moments of beauty. The contrast of soft, tactile petals against the absolute darkness is meant to evoke a feeling of \"memento vivere\" — a reminder to live and appreciate the peak of bloom before it fades."
+    },
+    {
+      "folder": "Transparency",
+      "title": "Transparency",
+      "year": 2025,
+      "dimensions": "40 × 50 cm",
+      "medium": "Oil on canvas",
+      "price": 1200,
+      "status": "available",
+      "images": [
+        "IMG_0561.JPG",
+        "IMG_0562.JPG"
+      ],
+      "description": "This work is about a state of ultimate sincerity. It is about a person who builds no walls, but instead allows the light to pass right through them.\n\nThe thin fabric here does not hide the face; it becomes a conduit between the outer world and the inner self. It is an exploration of the boundary between presence and disappearance, where fragility becomes one's greatest strength. When we stop resisting and allow the world to see our true selves, we begin to radiate light from within."
+    },
+    {
+      "folder": "True Form",
+      "title": "True Form",
+      "year": 2026,
+      "dimensions": "40 × 40 cm",
+      "medium": "Oil on canvas",
+      "price": 900,
+      "status": "available",
+      "images": [
+        "IMG_0582.JPG",
+        "IMG_0584.JPG"
+      ],
+      "description": "I have always been drawn to a femininity that is free from the need to be perfect.\n\nThis work is not about the display of the body. It is about the memory of movement, the touch of fabric against the skin, and the traces of a day that has passed. I was captivated by the beauty of the moment when the outward form gradually dissolves, giving way to an inner sense of self.\n\nTo me, it is within this inner freedom that a woman's true beauty is born."
     },
     {
       "folder": "Without Permission (no image)",
