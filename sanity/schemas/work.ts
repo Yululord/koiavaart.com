@@ -66,17 +66,26 @@ export const work = defineType({
     defineField({
       name: "price",
       title: "Price",
-      type: "string",
+      type: "number",
       description:
-        'Shown as written, so include the currency — for example "1600 €". Leave empty to hide the price and the Buy button.',
+        "In euros, digits only — 1600. The site adds the € itself, so every painting reads the same way. Leave empty to hide the price and the Buy button.",
+      validation: (rule) => rule.min(0).precision(2),
     }),
     defineField({
-      name: "available",
-      title: "Available",
-      type: "boolean",
+      name: "status",
+      title: "Status",
+      type: "string",
       description:
-        "Turn off once a painting is sold. Sold work still shows, without a price or Buy button.",
-      initialValue: true,
+        "Sold paintings stay in the gallery and are marked as sold. Available ones say nothing — the price speaks for itself.",
+      options: {
+        list: [
+          { title: "Available", value: "available" },
+          { title: "Sold", value: "sold" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "available",
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: "description",

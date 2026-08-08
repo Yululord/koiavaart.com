@@ -27,9 +27,10 @@ export type SanityWork = {
   medium?: string;
   dimensions?: string;
   description?: string;
-  price?: string;
+  /** Euros. The site renders the symbol. */
+  price?: number;
   year?: number;
-  available?: boolean;
+  status?: "available" | "sold";
   buyUrl?: string;
 };
 
@@ -56,7 +57,7 @@ const WORKS = groq`
       description,
       price,
       year,
-      available,
+      status,
       buyUrl
     }
 `;
