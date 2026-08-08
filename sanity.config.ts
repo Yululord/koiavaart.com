@@ -18,6 +18,12 @@ export default defineConfig({
   projectId,
   dataset,
   schema: { types: schemaTypes },
+  // Keep the session as a token in local storage rather than a cookie.
+  // The default is a cookie, which a browser will not store for an http
+  // origin or across sites once third-party cookies are blocked — so the
+  // login succeeded, the redirect came back with nothing kept, and the
+  // Studio asked to log in again, round and round.
+  auth: { loginMethod: "token" },
   plugins: [
     structureTool({
       structure: (S) =>
