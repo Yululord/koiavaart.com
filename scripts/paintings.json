@@ -1,5 +1,5 @@
 {
-  "_comment": "Transcribed from the Info.jpg sheets in ~/Downloads/Paintings, one entry per folder. Dimensions are as written on the sheet, in centimetres. Prices are euros as digits. `folder` is the source directory and `images` the photographs in it, first one primary. Incomplete: 9 of 17 read so far.",
+  "_comment": "Transcribed from the Info.jpg sheets in ~/Downloads/Paintings, one entry per folder. Dimensions are as written on the sheet, in centimetres. Prices are euros as digits. `folder` is the source directory and `images` the photographs in it, first one primary. Incomplete: 10 of 17 read so far.",
   "paintings": [
     {
       "folder": "After Monet",
@@ -121,6 +121,19 @@
         "IMG_0589.JPG"
       ],
       "description": "Architecture has always fascinated me not only through its form, but through its ability to create an emotional space. Some interiors possess a remarkable quality - they seem to invite us to slow down, listen to the silence, and spend a quiet moment alone with ourselves.\n\nAfter discovering Dutch interior painting, I became particularly fascinated by the way artists transformed architecture into the true subject of their work. Their paintings were not so much about buildings as they were about light, air, and the very experience of space. While creating this painting, I wanted to continue that dialogue, preserving not the precision of architectural detail, but the inner sense of calm and contemplation that such places evoke."
+    },
+    {
+      "folder": "Without Permission (no image)",
+      "title": "Without Permission",
+      "year": 2025,
+      "dimensions": "50 × 60 cm",
+      "medium": "Oil on canvas",
+      "price": 1000,
+      "status": "available",
+      "images": [
+        "IMG_0437.JPG"
+      ],
+      "description": "This portrait is built on contradictions. The crisp white collar evokes discipline and refinement, while a single cigarette quietly disrupts that impression. I was interested in how one small detail can completely reshape the viewer's perception of a person.\n\nWe rarely see people as they truly are. Instead, we see them through our own expectations, prejudices, and cultural assumptions. Perhaps freedom begins at the moment we stop trying to conform to those expectations.\n\nThere is no provocation in her gaze, no desire to please or to be understood. Instead, it conveys quiet confidence, inner independence, and a sensuality that does not seek attention. This painting is not about a woman holding a cigarette. It is about the freedom to be oneself, regardless of the story others choose to invent."
     }
   ]
 }
