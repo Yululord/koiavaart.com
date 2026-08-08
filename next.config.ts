@@ -17,6 +17,13 @@ const devOrigins = (process.env.DEV_ORIGINS ?? "")
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: devOrigins,
+  images: {
+    // next/image refuses to optimise a host it has not been told about, so
+    // the paintings and the portrait — all served from Sanity's CDN — have
+    // to be named here. The hero draws its own textures in WebGL and is
+    // unaffected; this is for the detail view and the About portrait.
+    remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
+  },
 };
 
 export default nextConfig;
