@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { contact, socialHref } from "@/data/site";
+import { contactMailto } from "@/lib/mailto";
 
 export function GalleryContact() {
   return (
@@ -11,8 +12,8 @@ export function GalleryContact() {
         <div className="flex flex-col gap-4">
           <p className="font-body text-base text-panel-muted">{contact.note}</p>
           <a
-            href={`mailto:${contact.email}`}
-            className="font-display break-all text-3xl uppercase leading-none text-white transition-opacity hover:opacity-70 sm:text-5xl"
+            href={contactMailto()}
+            className="font-display break-all text-2xl uppercase leading-none text-white transition-opacity hover:opacity-70 sm:text-[2.1rem]"
           >
             {contact.email}
           </a>
