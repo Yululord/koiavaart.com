@@ -137,17 +137,24 @@ export const desktopRing: RingConfig = {
  * parallax and hover zoom are off.
  */
 export const mobileRing: RingConfig = {
-  radiusFactor: 0.9,
+  // Sized for seventeen paintings rather than nine. At the old radius they
+  // sat 0.33 of the viewport apart and were 0.48 wide, so every card
+  // overlapped its neighbours; a wider ring with slightly smaller cards
+  // leaves a gap of about a fifth of a card between them. The smaller card
+  // also makes the band shorter, so the scene takes less height, not more.
+  radiusFactor: 1.3,
   copies: 1,
-  cardWidthRing: 0.48,
+  cardWidthRing: 0.4,
 
   lineSpacing: 0.744,
   cardWidthLine: 0.622,
 
   // Mobile stacks tagline, wordmark and categories above the band, so the
   // ring sits well below centre to clear them. It rises back to centre as it
-  // unwinds, by which point that text has collapsed into the header.
-  verticalOffset: -0.17,
+  // unwinds, by which point that text has collapsed into the header. Dropped
+  // further once the ring widened for seventeen: a bigger circle reaches
+  // higher, and the far cards were grazing the categories row.
+  verticalOffset: -0.21,
   verticalOffsetLine: 0.015,
 
   tiltX: 0.17,
