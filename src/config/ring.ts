@@ -181,11 +181,11 @@ export const mobileRing: RingConfig = {
   pointerTilt: 0,
   // Unused on mobile: the band never unwraps there.
   unwindEnd: 0.8,
-  // Dissolves in step with the wordmark's climb into the header — the
-  // morph runs from 0.03 to 0.3, and the fade window ends at 0.38, so the
-  // name settling and the scene leaving happen together rather than one
-  // after the other.
-  fadeStart: 0.08,
+  // 1 disables the dissolve. The scene stays where it is and the grid,
+  // being opaque and above the canvas, simply slides up over it — the
+  // cylinder is covered rather than removed, which reads as one continuous
+  // page instead of a scene that leaves before its replacement arrives.
+  fadeStart: 1,
 
   fov: 66,
   hoverScale: 1,
