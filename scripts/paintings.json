@@ -1,0 +1,49 @@
+{
+  "_comment": "Transcribed from the Info.jpg sheets in ~/Downloads/Paintings, one entry per folder. Dimensions are as written on the sheet, in centimetres. Prices are euros as digits. `folder` is the source directory and `images` the photographs in it, first one primary. Incomplete: 4 of 17 read so far.",
+  "paintings": [
+    {
+      "folder": "After Monet",
+      "title": "After Monet",
+      "year": 2026,
+      "dimensions": "100 × 100 cm",
+      "medium": "Oil on canvas",
+      "price": 1600,
+      "status": "available",
+      "images": ["IMG_1479.JPG"],
+      "description": "Claude Monet's Water Lilies have always inspired me not only for their beauty, but for their unique way of observing nature. In these paintings, the true subject is not the landscape itself, but the interplay of light, reflections on the water, and the ever-changing quality of a single moment.\n\nThis painting was born from a desire to preserve a similar sense of contemplation. I was interested not so much in the flowers themselves as in the space between them—the water, the air, the light, and the silence that bring the composition together.\n\nTo me, this work is about nature's quiet ability to slow time and remind us that its most peaceful moments are often the most meaningful."
+    },
+    {
+      "folder": "Anatomy of Solitude",
+      "title": "Anatomy of Solitude",
+      "year": 2026,
+      "dimensions": "100 × 110 cm",
+      "medium": "Acrylic on canvas",
+      "price": 2000,
+      "status": "available",
+      "images": ["IMG_0619.JPG"],
+      "description": "The house in this work exists as an architectural form, yet it has lost its essential function — to provide a sense of inner refuge and stability. Suspended above the ground, it becomes a metaphor for a state in which familiar points of reference no longer sustain the individual.\n\nThe composition is built upon the tension between the openness of the horizon and the invisible boundaries of the interior. Although no physical barriers are present, movement remains impossible. Here, solitude emerges not from the absence of others, but from the inability to experience a sense of belonging — to a place, to a space, or to oneself.\n\nThe keyhole functions as a symbol of potential access, yet the key cannot be found in the visible world. The only way to unlock this threshold lies within the individual.\n\nThe empty pedestal preserves a place for what cannot be represented: inner grounding, the feeling of home, or the state in which a space once again becomes inhabitable.\n\nThis work explores the moment when silence ceases to be a form of peace and instead becomes a condition of inner isolation."
+    },
+    {
+      "folder": "Composure",
+      "title": "Composure",
+      "year": null,
+      "dimensions": "45 × 35 cm",
+      "medium": "Oil on canvas",
+      "price": 1200,
+      "status": "available",
+      "images": ["IMG_0543.JPG", "IMG_0544.JPG"],
+      "description": "I have always been drawn to the portraits of the Old Masters, where the focus is not on narrative, but on the person themselves. With only a few carefully chosen details, these paintings reveal not simply an appearance, but a state of being.\n\nIn this work, I wanted to preserve a sense of quietness and inner composure. Light gently reveals the face, allowing everything else to recede into shadow. The earrings become the only expressive accent - a contemporary detail that connects the tradition of classical portraiture with the present day.\n\nI am drawn to the idea that true beauty is born not from the desire to impress, but from the ability to simply be oneself."
+    },
+    {
+      "folder": "Endless Distance",
+      "title": "Endless Distance",
+      "year": 2026,
+      "dimensions": "100 × 110 cm",
+      "medium": "Acrylic on canvas",
+      "price": 2000,
+      "status": "available",
+      "images": ["IMG_0620.JPG"],
+      "description": "The house in this work exists as a symbol of home, yet its interior is deprived of any sense of completion. Beyond each window lies another interior, which in turn leads to yet another, creating an endless perspective with no possibility of ever reaching its end.\n\nLoneliness is presented here not as isolation, but as a continuous movement away from what should provide a sense of closeness and security. The repetition of identical spaces transforms the house into a metaphor for an inner state in which the search for stability is endlessly deferred, leaving the individual in perpetual motion, unable to return."
+    }
+  ]
+}
