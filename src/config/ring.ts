@@ -113,6 +113,8 @@ export const desktopRing: RingConfig = {
   // Negative runs the band right-to-left — the ring's idle spin and the
   // strip's scroll travel are separate, and both go that way.
   idleSpeed: -0.0111,
+  // Unused: the travel is derived from the number of works, so the line
+  // lands on the last one however many paintings there are.
   stripTravel: -1.3,
   pointerPush: 0.048,
   pointerTilt: 0.12,

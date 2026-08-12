@@ -240,7 +240,13 @@ function WorkPlane({
       resetSwipe();
       scrolled = 0;
     } else {
-      scrolled = after * perPass * cfg.stripTravel;
+      // One short of a full lap, derived from the number of works rather
+      // than a multiplier. The tuned 1.3 was set when nine paintings made a
+      // 27-card ring; against seventeen it travels 1.3 laps, so the band
+      // wraps past its own end — every painting comes round twice and where
+      // it stops depends on where the idle spin happened to be. Sixteen
+      // steps covers each once and comes to rest on the last.
+      scrolled = -after * (ringSetSize() - 1) * spacing;
     }
 
     // Parallax belongs to the cylinder only: once the band is a flat row of
