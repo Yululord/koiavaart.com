@@ -102,10 +102,15 @@ export const desktopRing: RingConfig = {
   verticalOffset: -0.17,
   // This places the card's centre, but the caption and Learn more hang
   // below it — about 325px under the middle against 199 above — so a card
-  // centred in the frame leaves the group as a whole sitting low, close
-  // enough to the Contact button to crowd it. Lifted past the balance point
-  // so the whole group reads as centred with room beneath.
-  verticalOffsetLine: 0.09,
+  // centred in the frame leaves the group sitting low and crowding the
+  // Contact button.
+  //
+  // Between the card's own centre and the group's: balancing the bounding
+  // box exactly (0.07) reads as too high, because the painting carries the
+  // visual weight and light caption text below it does not offset it the
+  // way its height suggests. This sits the painting a little above centre
+  // and lets the text fill the space beneath.
+  verticalOffsetLine: 0.028,
 
   tiltX: 0.17,
   tiltZ: 0,
