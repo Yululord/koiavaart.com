@@ -11,6 +11,7 @@ import {
   MOBILE_INSET,
   MOBILE_TITLE_FILL,
   mobileGroupTop,
+  mobileMorph,
   mobileTitleHeight,
   setWordmarkWidth,
 } from "@/lib/hero-layout";
@@ -47,13 +48,7 @@ function smoothRange(p: number, start: number, end: number) {
  */
 const morph = (p: number) => smoothRange(p, 0.03, 0.3);
 
-/**
- * Mobile spreads the same movement across nearly the whole runway. Finishing
- * at 0.3 left the name sitting in the header for the remaining two thirds
- * before the grid arrived — dead scroll where nothing happened. Ending near
- * the runway's end means the name is still climbing as the grid comes up.
- */
-const morphMobile = (p: number) => smoothRange(p, 0.03, 0.78);
+
 
 export function Brand() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -100,7 +95,10 @@ export function Brand() {
         : 1;
       const headerScale = end.font / BASE_FONT;
 
-      const t = (mobile ? morphMobile : morph)(ringScrollProgress());
+      // Mobile waits for the grid to reach the text; desktop runs on scroll.
+      const t = mobile
+        ? mobileMorph(vw, vh)
+        : morph(ringScrollProgress());
       const scale = heroScale + (headerScale - heroScale) * t;
 
       // Always centred, at every size: deriving left from the current scale

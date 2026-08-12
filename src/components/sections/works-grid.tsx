@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useSyncExternalStore } from "react";
 import { subscribeWorks, works, worksVersion } from "@/data/works";
 import { formatPrice } from "@/lib/format";
+import { WORKS_GRID_ID } from "@/lib/hero-layout";
 import { openWork } from "@/lib/work-overlay";
 
 /**
@@ -33,7 +34,7 @@ export function WorksGrid() {
     // rising until the whole runway has scrolled past, which read as the
     // name reaching the header and then nothing happening — the section
     // now climbs with it and covers the seam.
-    <section className="relative z-20 -mt-[25vh] bg-white px-4 pb-28 pt-10 md:hidden">
+    <section id={WORKS_GRID_ID} className="relative z-20 -mt-[25vh] bg-white px-4 pb-28 pt-10 md:hidden">
       <ul className="grid grid-cols-2 gap-x-3 gap-y-9">
         {works.map((work) => (
           <li key={work.id}>

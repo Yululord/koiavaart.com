@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { ringScrollProgress } from "@/lib/scroll-progress";
+import { mobileMorph } from "@/lib/hero-layout";
 
 /**
  * Just the bar itself. The wordmark and tagline that sit inside it are
@@ -15,12 +16,15 @@ export function SiteHeader() {
     const tick = () => {
       const bar = barRef.current;
       if (bar) {
-        const p = ringScrollProgress();
-        // Mobile's morph runs long, so the bar arrives late to match; on
-        // desktop the name is home by 0.3 and the bar meets it there.
+        // Mobile follows the wordmark, which follows the grid; desktop runs
+        // on scroll progress.
         const mobile = window.innerWidth < 768;
-        const start = mobile ? 0.5 : 0.18;
-        const t = Math.max(0, Math.min(1, (p - start) / 0.14));
+        const t = mobile
+          ? mobileMorph(window.innerWidth, window.innerHeight)
+          : Math.max(
+              0,
+              Math.min(1, (ringScrollProgress() - 0.18) / 0.14),
+            );
         bar.style.opacity = String(t);
       }
       frame = requestAnimationFrame(tick);

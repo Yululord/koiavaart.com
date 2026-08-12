@@ -108,3 +108,35 @@ export function mobileBandCentre(vw: number, vh: number) {
     mobileGroupTop(vw, vh) + mobileTextHeight(vw) + TEXT_TO_BAND;
   return vh / 2 - (bandTop + mobileBandHeight(vw, vh) / 2);
 }
+
+/** So the wordmark can watch the grid climb toward it. */
+export const WORKS_GRID_ID = "works-grid";
+
+/** Height of the mobile header bar the wordmark settles into. */
+const MOBILE_HEADER = 56;
+
+/**
+ * How far the wordmark has collapsed into the header, on mobile — driven by
+ * the grid's position rather than by scroll progress.
+ *
+ * The scene stays whole and the name stays large while the grid rises over
+ * it. Only once the grid reaches the text does the name start shrinking,
+ * and it is home by the time the grid meets the header. Tying it to scroll
+ * instead meant the name shrank while the grid was still a screen away,
+ * which read as two unrelated things happening.
+ */
+export function mobileMorph(vw: number, vh: number) {
+  const grid =
+    typeof document === "undefined"
+      ? null
+      : document.getElementById(WORKS_GRID_ID);
+  if (!grid) return 0;
+
+  const top = grid.getBoundingClientRect().top;
+  const start = mobileGroupTop(vw, vh) + mobileTextHeight(vw);
+  const span = start - MOBILE_HEADER;
+  if (span <= 0) return top <= MOBILE_HEADER ? 1 : 0;
+
+  const t = Math.max(0, Math.min(1, (start - top) / span));
+  return t * t * (3 - 2 * t);
+}
