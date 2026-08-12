@@ -100,7 +100,12 @@ export const desktopRing: RingConfig = {
   cardWidthLine: 0.206,
 
   verticalOffset: -0.17,
-  verticalOffsetLine: -0.035,
+  // This places the card's centre, but the caption and Learn more hang
+  // below it — about 325px under the middle against 199 above — so a card
+  // centred in the frame leaves the group as a whole sitting low, close
+  // enough to the Contact button to crowd it. Lifted past the balance point
+  // so the whole group reads as centred with room beneath.
+  verticalOffsetLine: 0.09,
 
   tiltX: 0.17,
   tiltZ: 0,
