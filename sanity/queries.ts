@@ -72,11 +72,21 @@ const WORKS = groq`
  * the rest of the page carries on.
  *
  * A card is at most ~270 CSS px, so 800 is generous even at three times the
- * pixel density, and brings the whole ring under 60MB. The detail view is
- * unaffected: it reads `images` and goes through next/image, which does its
- * own resizing.
+ * pixel density, and brings the whole ring under 60MB.
  */
 const TEXTURE_WIDTH = 800;
+
+/**
+ * Width for the detail view, where a painting is shown as large as the
+ * screen allows. Her originals are 3000-5600px and were being served whole,
+ * which is why switching between a painting's photographs stalled. At 1400
+ * and WebP each is around 30KB rather than half a megabyte — still generous
+ * for a full-screen image on a high-density display.
+ */
+const DETAIL_WIDTH = 1400;
+
+const sized = (url: string, width: number) =>
+  `${url}?w=${width}&auto=format&q=78`;
 
 export async function getWorks() {
   const works = await sanityClient.fetch<SanityWork[]>(
@@ -87,7 +97,11 @@ export async function getWorks() {
 
   return works.map((work) => ({
     ...work,
-    src: `${work.src}?w=${TEXTURE_WIDTH}&auto=format&q=75`,
+    src: sized(work.src, TEXTURE_WIDTH),
+    images: work.images?.map((image) => ({
+      ...image,
+      src: sized(image.src, DETAIL_WIDTH),
+    })),
   }));
 }
 

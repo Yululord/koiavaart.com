@@ -199,12 +199,14 @@ export function WorkDetail() {
                     i === shot ? "opacity-100" : "opacity-40 hover:opacity-70"
                   }`}
                 >
+                  {/* Same URL as the full view, so the thumbnail warms the
+                      cache and switching is instant rather than a fetch. */}
                   <Image
                     src={image.src}
                     alt=""
                     width={image.width}
                     height={image.height}
-                    sizes="64px"
+                    sizes="(min-width: 1024px) 55vw, 90vw"
                     className="h-full w-full object-cover"
                   />
                 </button>
