@@ -82,7 +82,7 @@ export function WorkDetail() {
     setShownFor(slug);
     setShot(0);
   }
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusTo = useRef<Element | null>(null);
   const lenis = useLenis();
 
@@ -102,7 +102,7 @@ export function WorkDetail() {
     document.body.style.overflow = "hidden";
 
     restoreFocusTo.current = document.activeElement;
-    closeRef.current?.focus();
+    dialogRef.current?.focus();
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeWork();
@@ -133,14 +133,20 @@ export function WorkDetail() {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label={work.title}
-      className="fixed inset-0 z-[60] overflow-y-auto bg-white"
+      tabIndex={-1}
+      // Lenis is stopped underneath, but it still claims touch and wheel
+      // events; without this the overlay itself would not scroll and the
+      // description below the fold was unreachable.
+      data-lenis-prevent
+      className="fixed inset-0 z-[60] overflow-y-auto overscroll-contain bg-white focus:outline-none"
     >
-      {/* The × is the only way out, and it takes the initial focus. */}
+      {/* The × is the only way out. Focus goes to the dialog rather than
+          here, so tapping a painting does not land you on a ring. */}
       <button
-        ref={closeRef}
         type="button"
         onClick={closeWork}
         aria-label="Close"
@@ -166,7 +172,7 @@ export function WorkDetail() {
         </>
       )}
 
-      <div className="mx-auto flex min-h-full max-w-6xl flex-col items-center justify-center gap-10 px-16 py-20 sm:px-24 lg:flex-row lg:items-center lg:gap-16">
+      <div className="mx-auto flex min-h-full max-w-6xl flex-col items-center justify-start gap-10 px-6 py-20 sm:px-24 lg:flex-row lg:items-center lg:justify-center lg:gap-16">
         <div className="flex flex-col items-center gap-4">
           <Image
             key={`${work.slug}-${shot}`}
