@@ -99,12 +99,16 @@ export function Brand() {
       const t = mobile
         ? mobileMorph(vw, vh)
         : morph(ringScrollProgress());
-      const scale = heroScale + (headerScale - heroScale) * t;
+      // Staged on mobile: the categories clear over the first third, and
+      // the name only starts moving once they are on their way out. Running
+      // both at once made the whole block appear to lurch.
+      const move = mobile ? smoothRange(t, 0.25, 1) : t;
+      const scale = heroScale + (headerScale - heroScale) * move;
 
       // Always centred, at every size: deriving left from the current scale
       // keeps it centred throughout rather than drifting mid-shrink.
       const left = (vw - naturalWidth * scale) / 2;
-      const top = padTop + (end.titleTop - padTop) * t;
+      const top = padTop + (end.titleTop - padTop) * move;
       title.style.transform = `translate(${left - padX}px, ${top}px) scale(${scale})`;
 
       const titleHeight = mobile
@@ -114,16 +118,18 @@ export function Brand() {
       // Tagline holds the top on mobile and only tightens up; on desktop it
       // travels down from under the wordmark into the header row.
       const taglineStart = mobile ? taglineHome : padTop + titleHeight + 18;
-      const taglineTop = taglineStart + (end.taglineTop - taglineStart) * t;
+      const taglineTop = taglineStart + (end.taglineTop - taglineStart) * move;
       tagline.style.transform = `translateY(${taglineTop}px)`;
-      tagline.style.fontSize = `${end.captionFont + (end.taglineFont - end.captionFont) * t}px`;
+      tagline.style.fontSize = `${end.captionFont + (end.taglineFont - end.captionFont) * move}px`;
 
       // Categories sit under the wordmark on mobile and fade out as it
       // collapses into the header — there is no room for them there.
       if (categories) {
         const categoriesTop = padTop + titleHeight + MOBILE_GAP;
-        categories.style.transform = `translateY(${categoriesTop * (1 - t)}px)`;
-        categories.style.opacity = String(Math.max(0, 1 - t * 2));
+        categories.style.transform = `translateY(${categoriesTop * (1 - move)}px)`;
+        // Gone by the time the name sets off, so the two read as one
+        // movement handing over rather than two things happening at once.
+        categories.style.opacity = String(1 - smoothRange(t, 0, 0.3));
       }
 
       frame = requestAnimationFrame(tick);

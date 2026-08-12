@@ -150,7 +150,9 @@ export function WorkDetail() {
         type="button"
         onClick={closeWork}
         aria-label="Close"
-        className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-ink transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 sm:right-8 sm:top-8"
+        // Fixed, not absolute: the overlay scrolls, and an absolute × would leave
+        // with the top of the painting. Backed so it stays legible over artwork.
+        className="fixed right-4 top-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/80 text-ink backdrop-blur transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 sm:right-8 sm:top-8"
       >
         <svg
           width="18"

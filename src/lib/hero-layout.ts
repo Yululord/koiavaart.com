@@ -138,5 +138,8 @@ export function mobileMorph(vw: number, vh: number) {
   if (span <= 0) return top <= MOBILE_HEADER ? 1 : 0;
 
   const t = Math.max(0, Math.min(1, (start - top) / span));
-  return t * t * (3 - 2 * t);
+  // Smootherstep rather than smoothstep: zero acceleration at both ends as
+  // well as zero velocity, so the name eases out of rest and into the header
+  // instead of setting off and stopping abruptly.
+  return t * t * t * (t * (t * 6 - 15) + 10);
 }
