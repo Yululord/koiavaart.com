@@ -24,10 +24,11 @@ export const work = defineType({
       name: "slug",
       title: "Slug",
       type: "slug",
-      description:
-        "Used in the address bar when the painting is opened. Generated from the title.",
+      // Hidden: it is derived from the title and only used in the address
+      // bar. The site falls back to slugifying the title if it is unset, so
+      // nothing breaks when a painting is added without one.
+      hidden: true,
       options: { source: "title", maxLength: 96 },
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: "images",
@@ -42,14 +43,15 @@ export const work = defineType({
       name: "order",
       title: "Order",
       type: "number",
-      description:
-        "Position in the gallery, lowest first. Leave gaps (10, 20, 30) so paintings can be slotted in between later.",
+      // Hidden: the gallery falls back to the date a painting was added, so
+      // new work lands at the end without anyone setting a number.
+      hidden: true,
     }),
     defineField({
       name: "medium",
-      title: "Medium",
+      title: "Materials",
       type: "string",
-      description: 'For example "Oil on canvas".',
+      description: 'What it is painted with and on — "Oil on canvas".',
     }),
     defineField({
       name: "dimensions",
@@ -68,7 +70,8 @@ export const work = defineType({
       title: "Price",
       type: "number",
       description:
-        "In euros, digits only — 1600. The site adds the € itself, so every painting reads the same way. Leave empty to hide the price and the Buy button.",
+        "Digits only — the site adds the € itself, so every painting reads the same way. Leave empty to hide the price and the Buy button.",
+      placeholder: "1600 (€)",
       validation: (rule) => rule.min(0).precision(2),
     }),
     defineField({
@@ -92,13 +95,6 @@ export const work = defineType({
       title: "Description",
       type: "text",
       rows: 4,
-    }),
-    defineField({
-      name: "buyUrl",
-      title: "Saatchi listing",
-      type: "url",
-      description:
-        "Link to this painting on Saatchi Art. Falls back to the profile page if empty.",
     }),
   ],
   orderings: [

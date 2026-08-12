@@ -88,6 +88,17 @@ const DETAIL_WIDTH = 1400;
 const sized = (url: string, width: number) =>
   `${url}?w=${width}&auto=format&q=78`;
 
+/**
+ * The slug field is hidden in the Studio, so a painting added there arrives
+ * without one. Derived from the title instead — it only ever appears in the
+ * address bar.
+ */
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 export async function getWorks() {
   const works = await sanityClient.fetch<SanityWork[]>(
     WORKS,
@@ -97,6 +108,7 @@ export async function getWorks() {
 
   return works.map((work) => ({
     ...work,
+    slug: work.slug || slugify(work.title),
     src: sized(work.src, TEXTURE_WIDTH),
     images: work.images?.map((image) => ({
       ...image,

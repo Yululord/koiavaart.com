@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { ReactLenis } from "lenis/react";
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
@@ -25,7 +26,9 @@ function subscribeReducedMotion(onChange: () => void) {
  *    before anything reads it, and the canvas stays in step with the DOM.
  *
  * Smoothing is skipped entirely for anyone who asks for reduced motion;
- * hijacked scrolling is a common trigger for motion sensitivity.
+ * hijacked scrolling is a common trigger for motion sensitivity. It is also
+ * skipped in the Studio: Sanity scrolls its own panes, and Lenis claiming
+ * the wheel left the painting list and the fields inside it stuck.
  */
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const prefersReducedMotion = useSyncExternalStore(
@@ -34,7 +37,10 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     () => false,
   );
 
-  if (prefersReducedMotion) return <>{children}</>;
+  const pathname = usePathname();
+  if (prefersReducedMotion || pathname?.startsWith("/studio")) {
+    return <>{children}</>;
+  }
 
   return (
     <ReactLenis
