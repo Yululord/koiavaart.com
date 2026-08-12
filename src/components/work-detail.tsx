@@ -34,9 +34,45 @@ function Arrow({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`absolute top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-ink transition-colors hover:bg-neutral-100 ${
-        direction === "prev" ? "left-4 sm:left-8" : "right-4 sm:right-8"
+      className={`absolute top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-ink transition-colors hover:bg-neutral-100 md:flex ${
+        direction === "prev" ? "left-4 md:left-8" : "right-4 md:right-8"
       }`}
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        aria-hidden
+      >
+        <path
+          d={direction === "prev" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
+/** The bar's chevrons: square, quieter, sized to sit beside the Buy button. */
+function StepButton({
+  direction,
+  onClick,
+  label,
+}: {
+  direction: "prev" | "next";
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line text-ink transition-colors active:bg-neutral-100"
     >
       <svg
         width="18"
@@ -174,7 +210,7 @@ export function WorkDetail() {
         </>
       )}
 
-      <div className="mx-auto flex min-h-full max-w-6xl flex-col items-center justify-start gap-10 px-6 py-20 sm:px-24 lg:flex-row lg:items-center lg:justify-center lg:gap-16">
+      <div className="mx-auto flex min-h-full max-w-6xl flex-col items-center justify-start gap-10 px-6 pb-32 pt-20 sm:px-24 md:pb-20 lg:flex-row lg:items-center lg:justify-center lg:gap-16">
         <div className="flex flex-col items-center gap-4">
           <Image
             key={`${work.slug}-${shot}`}
@@ -236,7 +272,7 @@ export function WorkDetail() {
             </div>
           ) : (
             work.price && (
-              <div className="mt-2 flex items-center gap-4">
+              <div className="mt-2 hidden items-center gap-4 md:flex">
                 <span className="font-display text-2xl leading-none text-ink">
                   {formatPrice(work.price)}
                 </span>
@@ -254,6 +290,39 @@ export function WorkDetail() {
             {index + 1} / {works.length}
           </p>
         </div>
+      </div>
+
+      {/* Phone only: stepping between paintings and buying the one in front
+          of you are the two things to do here, so they sit together within
+          a thumb's reach rather than at the screen edges and halfway up a
+          scroll. Desktop keeps the chevrons at the sides. */}
+      <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between gap-3 border-t border-line bg-white/90 px-4 py-3 backdrop-blur md:hidden">
+        <StepButton
+          direction="prev"
+          onClick={() => step(-1)}
+          label="Previous painting"
+        />
+
+        {work.status === "sold" ? (
+          <span className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-ink font-body text-base text-white">
+            Sold
+          </span>
+        ) : work.price ? (
+          <a
+            href={paintingMailto(work)}
+            className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-black font-body text-base text-white transition-opacity hover:opacity-80"
+          >
+            Buy <span className="opacity-70">{formatPrice(work.price)}</span>
+          </a>
+        ) : (
+          <span className="flex-1" />
+        )}
+
+        <StepButton
+          direction="next"
+          onClick={() => step(1)}
+          label="Next painting"
+        />
       </div>
     </div>
   );
