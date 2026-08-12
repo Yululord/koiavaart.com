@@ -116,6 +116,16 @@ export const WORKS_GRID_ID = "works-grid";
 const MOBILE_HEADER = 56;
 
 /**
+ * How far below the text the grid starts influencing the wordmark.
+ *
+ * Without it the move has only the gap between the text and the header to
+ * happen in — a few hundred pixels of scroll — which is why it felt quick.
+ * Starting while the grid is still approaching stretches the same movement
+ * over roughly half as much scrolling again, so it eases rather than snaps.
+ */
+const MORPH_LEAD_IN = 220;
+
+/**
  * How far the wordmark has collapsed into the header, on mobile — driven by
  * the grid's position rather than by scroll progress.
  *
@@ -133,7 +143,7 @@ export function mobileMorph(vw: number, vh: number) {
   if (!grid) return 0;
 
   const top = grid.getBoundingClientRect().top;
-  const start = mobileGroupTop(vw, vh) + mobileTextHeight(vw);
+  const start = mobileGroupTop(vw, vh) + mobileTextHeight(vw) + MORPH_LEAD_IN;
   const span = start - MOBILE_HEADER;
   if (span <= 0) return top <= MOBILE_HEADER ? 1 : 0;
 
