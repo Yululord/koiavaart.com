@@ -28,7 +28,12 @@ export function WorksGrid() {
     // Geometry from the Mobile 5 frame: 16px inset and a 12px gutter. The
     // row gap is wider than the frame's 16 — the caption needs air beneath
     // it, or it reads as belonging to the tile below it rather than above.
-    <section className="relative z-20 bg-white px-4 pb-28 pt-10 md:hidden">
+    // Pulled up over the hero's runway so its top edge sits at the fold
+    // rather than a screen below it. Without this the grid cannot begin
+    // rising until the whole runway has scrolled past, which read as the
+    // name reaching the header and then nothing happening — the section
+    // now climbs with it and covers the seam.
+    <section className="relative z-20 -mt-[25vh] bg-white px-4 pb-28 pt-10 md:hidden">
       <ul className="grid grid-cols-2 gap-x-3 gap-y-9">
         {works.map((work) => (
           <li key={work.id}>
