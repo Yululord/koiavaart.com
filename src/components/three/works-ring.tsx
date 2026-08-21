@@ -246,7 +246,15 @@ function WorkPlane({
       // wraps past its own end — every painting comes round twice and where
       // it stops depends on where the idle spin happened to be. Sixteen
       // steps covers each once and comes to rest on the last.
-      scrolled = -after * (ringSetSize() - 1) * spacing;
+      // Plus whatever fraction of a step the idle turn has left the band
+      // sitting at. Sixteen whole steps from an arbitrary starting offset
+      // lands at that same arbitrary offset, so the run finished part way
+      // between two paintings and the one at the edge was sliced by the
+      // viewport — differently on each visit, depending how long the
+      // cylinder had been turning. Carrying the remainder lands it square.
+      // Idle has stopped accumulating by now, so this holds still.
+      scrolled =
+        -after * ((ringSetSize() - 1) * spacing + wrapSigned(idle, spacing));
     }
 
     // Parallax belongs to the cylinder only: once the band is a flat row of
