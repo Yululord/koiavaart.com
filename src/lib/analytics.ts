@@ -50,6 +50,12 @@ export function startAnalytics() {
     // privacy question than counting them, and nobody asked for it.
     disable_session_recording: true,
     autocapture: false,
+    // Surveys are on by default and fetch a further 300KB to draw popups
+    // over whatever is on screen. On a site whose whole purpose is looking
+    // at paintings, that is the last thing wanted.
+    disable_surveys: true,
+    // Likewise the experiment framework: nothing here is being A/B tested.
+    disable_web_experiments: true,
   });
 }
 
