@@ -70,9 +70,10 @@ export function startAnalytics() {
     }
   });
 
-  // Closing the tab with a painting open still has to report it. pagehide
-  // fires where unload does not, which on iOS Safari is most of the time.
-  window.addEventListener("pagehide", endPaintingView);
+  // Closing the tab or swiping the app away with a painting open still has
+  // to report it. pagehide fires where unload does not, which on iOS Safari
+  // is most of the time, and the beacon is what actually gets it delivered.
+  window.addEventListener("pagehide", () => reportClosed(true));
 }
 
 /** No-ops when analytics is not configured, so callers need no guards. */
@@ -128,19 +129,35 @@ export function beginPaintingView(slug: string, title?: string) {
   };
 }
 
-/** Closed, stepped away from, or the tab was shut. Safe to call twice. */
-export function endPaintingView() {
+function reportClosed(leaving: boolean) {
   if (!view) return;
   bankTime();
 
-  track("painting_closed", {
+  const props = {
     slug: view.slug,
     title: view.title,
     // Tenths of a second: enough precision to separate a glance from a
     // look, without pretending to more than the measurement deserves.
     seconds: Math.round(view.shown / 100) / 10,
-  });
+  };
   view = null;
+
+  if (!KEY || !started) return;
+  // A page being unloaded does not stay alive long enough to finish a
+  // request, so the event has to be handed to the browser as a beacon: it
+  // promises to deliver after the page is gone. Without this, every visitor
+  // who swipes the tab away rather than pressing the × is missing from the
+  // timings — which on a phone is most of them.
+  posthog.capture(
+    "painting_closed",
+    props,
+    leaving ? { transport: "sendBeacon" } : undefined,
+  );
+}
+
+/** Closed, stepped away from, or the tab was shut. Safe to call twice. */
+export function endPaintingView() {
+  reportClosed(false);
 }
 
 /** A second photograph of the same painting was chosen. */
