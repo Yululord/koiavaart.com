@@ -11,6 +11,7 @@ import {
   worksVersion,
 } from "@/data/works";
 import { formatPrice } from "@/lib/format";
+import { trackBuyClicked, trackPaintingOpened } from "@/lib/analytics";
 import { paintingMailto } from "@/lib/mailto";
 import {
   closeWork,
@@ -127,6 +128,16 @@ export function WorkDetail() {
     const next = works[(index + delta + works.length) % works.length];
     replaceWork(next.slug);
   };
+
+  // Recorded here rather than at each call site, so it covers the hero
+  // card, the grid tile and a shared ?work= link alike.
+  // Keyed on the slug rather than the object: the paintings list is replaced
+  // once when Sanity's data arrives, which would otherwise count a second
+  // view of whatever is open.
+  useEffect(() => {
+    if (work) trackPaintingOpened(work.slug, work.title);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [work?.slug]);
 
   useEffect(() => {
     if (!work) return;
@@ -278,6 +289,9 @@ export function WorkDetail() {
                 </span>
                 <a
                   href={paintingMailto(work)}
+                  onClick={() =>
+                    trackBuyClicked(work.slug, work.title, work.price)
+                  }
                   className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 font-body text-base text-white transition-opacity hover:opacity-80"
                 >
                   Buy
@@ -310,6 +324,7 @@ export function WorkDetail() {
         ) : work.price ? (
           <a
             href={paintingMailto(work)}
+            onClick={() => trackBuyClicked(work.slug, work.title, work.price)}
             className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-black font-body text-base text-white transition-opacity hover:opacity-80"
           >
             Buy <span className="opacity-70">{formatPrice(work.price)}</span>

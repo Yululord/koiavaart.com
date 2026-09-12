@@ -4,6 +4,7 @@ import { Brand } from "@/components/brand";
 import { ContactPill } from "@/components/contact-pill";
 import { WorksRing } from "@/components/three/works-ring";
 import { WorksData } from "@/components/works-data";
+import { Analytics } from "@/components/analytics";
 import { WorkDetail } from "@/components/work-detail";
 import { Hero } from "@/components/sections/hero";
 import { WorksGrid } from "@/components/sections/works-grid";
@@ -18,6 +19,7 @@ export default async function Home() {
   return (
     <>
       <WorksData works={works} />
+      <Analytics />
       <WorksRing />
       <SiteHeader />
       <Brand />

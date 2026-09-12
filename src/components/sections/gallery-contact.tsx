@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { contact, socialHref } from "@/data/site";
-import { contactMailto } from "@/lib/mailto";
+import { ContactEmailLink } from "@/components/contact-email-link";
 
 export function GalleryContact() {
   return (
@@ -11,12 +11,10 @@ export function GalleryContact() {
       <div className="relative z-10 flex flex-col gap-10 px-6 sm:flex-row sm:items-start sm:justify-between sm:gap-12 sm:px-10">
         <div className="flex flex-col gap-4">
           <p className="font-body text-base text-panel-muted">{contact.note}</p>
-          <a
-            href={contactMailto()}
+          <ContactEmailLink
+            email={contact.email}
             className="font-display break-all text-2xl uppercase leading-none text-white transition-opacity hover:opacity-70 sm:text-[2.1rem]"
-          >
-            {contact.email}
-          </a>
+          />
         </div>
 
         {/* The label stays put; each handle is its own link, so only the one

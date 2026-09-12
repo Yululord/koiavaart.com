@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { contactMailto } from "@/lib/mailto";
+import { trackContactClicked } from "@/lib/analytics";
 
 /**
  * Always-visible mail button, pinned to the centre of the footer row.
@@ -44,6 +45,7 @@ export function ContactPill() {
       <a
         ref={pillRef}
         href={contactMailto()}
+        onClick={() => trackContactClicked("pill")}
         className="pointer-events-auto inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-black px-6 font-body text-base text-white transition-opacity hover:opacity-80"
       >
         Contact
