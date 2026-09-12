@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { contact, socialHref } from "@/data/site";
 import { ContactEmailLink } from "@/components/contact-email-link";
 
@@ -42,6 +43,18 @@ export function GalleryContact() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* The privacy notice lives here rather than in the footer row, which
+          is hidden on a phone. Deliberately quiet: there is no banner to
+          dismiss because the site stores nothing on anyone's device. */}
+      <div className="relative z-10 mt-10 px-6 sm:px-10">
+        <Link
+          href="/privacy"
+          className="font-body text-sm text-panel-muted underline decoration-panel-muted/40 underline-offset-4 transition-opacity hover:opacity-70"
+        >
+          Privacy — no cookies
+        </Link>
       </div>
 
       {/* Full bleed: the collage runs edge to edge while the text above it

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { site } from "@/data/site";
 
 /**
@@ -11,9 +12,17 @@ export function SiteFooter() {
     // the bottom of the page rather than trailing a blank white band.
     <footer className="relative z-20 hidden h-24 items-center justify-between bg-white px-6 sm:px-10 md:flex">
       <p className="font-body text-sm text-muted">{site.copyright}</p>
-      <p className="hidden font-body text-sm text-muted md:block">
-        {site.categories.join(" · ")}
-      </p>
+      <div className="hidden items-center gap-6 md:flex">
+        <p className="font-body text-sm text-muted">
+          {site.categories.join(" · ")}
+        </p>
+        <Link
+          href="/privacy"
+          className="font-body text-sm text-muted transition-opacity hover:opacity-70"
+        >
+          Privacy
+        </Link>
+      </div>
     </footer>
   );
 }
