@@ -57,6 +57,22 @@ export function startAnalytics() {
     // Likewise the experiment framework: nothing here is being A/B tested.
     disable_web_experiments: true,
   });
+
+  // Time with the tab in the background is not time spent looking.
+  document.addEventListener("visibilitychange", () => {
+    if (!view) return;
+    if (document.visibilityState === "hidden") {
+      bankTime();
+      view.visible = false;
+    } else {
+      view.since = Date.now();
+      view.visible = true;
+    }
+  });
+
+  // Closing the tab with a painting open still has to report it. pagehide
+  // fires where unload does not, which on iOS Safari is most of the time.
+  window.addEventListener("pagehide", endPaintingView);
 }
 
 /** No-ops when analytics is not configured, so callers need no guards. */
@@ -65,9 +81,71 @@ function track(event: string, props?: Record<string, unknown>) {
   posthog.capture(event, props);
 }
 
-/** A painting's own page was opened, from the hero or the grid. */
-export function trackPaintingOpened(slug: string, title?: string) {
+/**
+ * How long a painting was actually looked at.
+ *
+ * This is the number worth having — which paintings hold someone for a
+ * minute and which are closed in two seconds — and it needs no cookie. It
+ * is a timestamp taken while the overlay is open, not anything remembered
+ * about the visitor between visits.
+ *
+ * Time with the tab hidden does not count. Someone who opens a painting and
+ * wanders off to another tab for an hour has not looked at it for an hour,
+ * and counting that would quietly make the averages meaningless.
+ */
+type PaintingView = {
+  slug: string;
+  title?: string;
+  /** Milliseconds on screen so far, tab-hidden time excluded. */
+  shown: number;
+  /** When the current visible stretch began. */
+  since: number;
+  visible: boolean;
+};
+
+let view: PaintingView | null = null;
+
+function bankTime() {
+  if (!view || !view.visible) return;
+  const now = Date.now();
+  view.shown += now - view.since;
+  view.since = now;
+}
+
+/** A painting was opened, from the hero, the grid, or a shared link. */
+export function beginPaintingView(slug: string, title?: string) {
+  // Stepping straight to the next painting closes the current one.
+  endPaintingView();
+
   track("painting_opened", { slug, title });
+  view = {
+    slug,
+    title,
+    shown: 0,
+    since: Date.now(),
+    visible:
+      typeof document === "undefined" || document.visibilityState === "visible",
+  };
+}
+
+/** Closed, stepped away from, or the tab was shut. Safe to call twice. */
+export function endPaintingView() {
+  if (!view) return;
+  bankTime();
+
+  track("painting_closed", {
+    slug: view.slug,
+    title: view.title,
+    // Tenths of a second: enough precision to separate a glance from a
+    // look, without pretending to more than the measurement deserves.
+    seconds: Math.round(view.shown / 100) / 10,
+  });
+  view = null;
+}
+
+/** A second photograph of the same painting was chosen. */
+export function trackPhotoSwitched(slug: string, index: number) {
+  track("photo_switched", { slug, index });
 }
 
 /** Buy was pressed — the closest thing this site has to a conversion. */

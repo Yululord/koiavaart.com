@@ -11,7 +11,12 @@ import {
   worksVersion,
 } from "@/data/works";
 import { formatPrice } from "@/lib/format";
-import { trackBuyClicked, trackPaintingOpened } from "@/lib/analytics";
+import {
+  beginPaintingView,
+  endPaintingView,
+  trackBuyClicked,
+  trackPhotoSwitched,
+} from "@/lib/analytics";
 import { paintingMailto } from "@/lib/mailto";
 import {
   closeWork,
@@ -130,12 +135,17 @@ export function WorkDetail() {
   };
 
   // Recorded here rather than at each call site, so it covers the hero
-  // card, the grid tile and a shared ?work= link alike.
+  // card, the grid tile and a shared ?work= link alike. The cleanup is what
+  // measures how long the painting was looked at: it runs when the overlay
+  // closes and when one painting is stepped to the next.
+  //
   // Keyed on the slug rather than the object: the paintings list is replaced
-  // once when Sanity's data arrives, which would otherwise count a second
-  // view of whatever is open.
+  // once when Sanity's data arrives, and depending on identity would restart
+  // the clock at that moment.
   useEffect(() => {
-    if (work) trackPaintingOpened(work.slug, work.title);
+    if (!work) return;
+    beginPaintingView(work.slug, work.title);
+    return endPaintingView;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [work?.slug]);
 
@@ -241,7 +251,10 @@ export function WorkDetail() {
                 <button
                   key={image.src}
                   type="button"
-                  onClick={() => setShot(i)}
+                  onClick={() => {
+                    setShot(i);
+                    trackPhotoSwitched(work.slug, i);
+                  }}
                   aria-label={`Photograph ${i + 1} of ${shots.length}`}
                   aria-current={i === shot}
                   className={`h-16 w-16 overflow-hidden rounded-sm transition-opacity ${
