@@ -45,15 +45,18 @@ export default function PrivacyPage() {
           So that Valeriia can tell whether anyone is looking at her work, the
           site keeps a simple tally of visits: the page visited, the country it
           was visited from, the kind of device, and the website or search that
-          led here. It also records which paintings are opened and when someone
-          presses Buy or Contact — which paintings hold attention, in other
-          words.
+          led here. It also records which paintings are opened, how long each
+          one stays on screen, which photograph of a painting was chosen, and
+          when someone presses Buy or Contact — which paintings hold
+          attention, in other words.
         </p>
         <p>
           These counts are anonymous and not linked to a name, an email
           address, or an identifier kept on your device. Because nothing is
           stored in your browser, the site cannot recognise you if you come
-          back tomorrow — every visit is counted fresh.
+          back tomorrow — every visit is counted fresh. Time is measured only
+          while the page is actually in front of you: a tab left open in the
+          background counts for nothing.
         </p>
 
         <h2 className="font-display mt-4 text-xl uppercase leading-none text-ink">
