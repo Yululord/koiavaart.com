@@ -15,6 +15,34 @@ const devOrigins = (process.env.DEV_ORIGINS ?? "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+/**
+ * PostHog's three hostnames, worked out from the one the integration sets.
+ *
+ * NEXT_PUBLIC_POSTHOG_HOST arrives as the dashboard address —
+ * https://eu.posthog.com — but events are not accepted there. Ingestion is
+ * eu.i.posthog.com and the script bundle is eu-assets.i.posthog.com. Sending
+ * to the dashboard host records nothing, silently, which is the worst way
+ * for analytics to fail.
+ */
+function posthogHosts(raw: string | undefined) {
+  if (!raw) return null;
+
+  let region: string;
+  try {
+    // "eu.posthog.com", "eu.i.posthog.com" and "eu-assets.i.posthog.com"
+    // all name the same region.
+    region = new URL(raw).hostname.split(".")[0].replace("-assets", "");
+  } catch {
+    return null;
+  }
+  if (region !== "eu" && region !== "us") return null;
+
+  return {
+    ingest: `https://${region}.i.posthog.com`,
+    assets: `https://${region}-assets.i.posthog.com`,
+  };
+}
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: devOrigins,
   /**
@@ -29,15 +57,12 @@ const nextConfig: NextConfig = {
    */
   skipTrailingSlashRedirect: true,
   async rewrites() {
-    const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
-    if (!host) return [];
-
-    // EU and US clouds put ingestion on a different hostname to the assets.
-    const assets = host.replace("//eu.", "//eu-assets.").replace("//us.", "//us-assets.");
+    const hosts = posthogHosts(process.env.NEXT_PUBLIC_POSTHOG_HOST);
+    if (!hosts) return [];
 
     return [
-      { source: "/ingest/static/:path*", destination: `${assets}/static/:path*` },
-      { source: "/ingest/:path*", destination: `${host}/:path*` },
+      { source: "/ingest/static/:path*", destination: `${hosts.assets}/static/:path*` },
+      { source: "/ingest/:path*", destination: `${hosts.ingest}/:path*` },
     ];
   },
   images: {

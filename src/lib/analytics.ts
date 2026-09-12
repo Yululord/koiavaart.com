@@ -13,7 +13,15 @@ import posthog from "posthog-js";
  * `persistence` below to change it.
  */
 
-const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+/**
+ * Named PROJECT_TOKEN rather than KEY because that is what PostHog's Vercel
+ * integration creates, and those variables are managed by the integration —
+ * renaming them here would be undone the next time it syncs.
+ *
+ * Public by design: it is compiled into the JavaScript the browser
+ * downloads. It can send events and can never read them back.
+ */
+const KEY = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
 
 /**
  * Events go to our own domain and Next rewrites them onward. PostHog's own
